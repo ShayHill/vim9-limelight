@@ -113,7 +113,7 @@ enddef
 
 export def SqEuclidean(vec_a: list<number>, vec_b: list<number>): number
   # Squared Euclidean distance between two vectors
-  var diffs = map(copy(vec_a), (i, v) => v - vec_b[i]) 
+  var diffs = map(copy(vec_a), (i, v) => v - vec_b[i])
   var terms = map(copy(diffs), (_, v) => v * v)
   return terms[0] + terms[1] + terms[2]
 enddef
@@ -264,7 +264,41 @@ export def HlgetOrEmpty(hi_group: string): dict<any>
 enddef
 
 
-def HiFgOrBg(sources: list<string>, fg_or_bg: string): dict<string>
+def HiFgOrBgJustOne(source: string, fg_or_bg: string): dict<string>
+  # Try to get either the fg or bg colors from a highlight group.
+  #
+  # # Inputs:
+  #   source: highlight group name
+  #   fg_or_bg: 'fg' or 'bg'
+  #
+  # Returns:
+  #   dict with keys ['gui' and 'cterm']
+  var gui_g: string  # hold val of gui_attr (guifg or guibg)
+  var cterm_g: string  # hold val of cterm_attr (ctermfg or ctermbg)
+  var gui_attr = 'gui' .. fg_or_bg
+  var cterm_attr = 'cterm' .. fg_or_bg
+
+  var hidict = HlgetOrEmpty(source)
+  var is_gui_reversed = hidict->get('gui', {})->get('reverse', v:false)
+  var is_cterm_reversed = hidict->get('cterm', {})->get('reverse', v:false)
+
+  if is_gui_reversed
+    gui_attr = gui_attr == 'guifg' ? 'guibg' : 'guifg'
+  endif
+  if is_cterm_reversed
+    cterm_attr = cterm_attr == 'ctermfg' ? 'ctermbg' : 'ctermfg'
+  endif
+
+  gui_g = TryHex(hidict->get(gui_attr, ''))
+  cterm_g = TryHex(hidict->get(cterm_attr, ''))
+  gui_g = gui_g != '' ? gui_g : cterm_g
+  cterm_g = cterm_g != '' ? cterm_g : gui_g
+
+  return {gui: gui_g, cterm: cterm_g}
+enddef
+
+
+def HiFgOrBgWithFallback(sources: list<string>, fg_or_bg: string): dict<string>
   # Get either the fg or bg colors from the first viable candidate in a list
   # of sources. Search order is.
   # * if the first source has both guifg and ctermfg, return both
@@ -276,55 +310,33 @@ def HiFgOrBg(sources: list<string>, fg_or_bg: string): dict<string>
   #   'Normal', return black for the foreground or white for the background.
   #
   # Inputs:
-  #  sources: list of highlight group names 
+  #  sources: list of highlight group names
   #  fg_or_bg: 'fg' or 'bg'
   #
   # Returns:
-  #   dict with keys ['guifg' and 'ctermfg'] or ['guibg' and 'ctermbg']. Each
-  #   mapped to a hex color.
-  #
-  # I call this two ways:
-  # 1. [some_group, ..., 'Normal'] - This means 'give me *some* foreground
-  #   or background color no matter what'. Some of the Vim themes provide
-  #   *nothing*, just instructions or flags like 'cleared'. If 'Normal' is
-  #   passed as the last source and the Normal highlight group is 'cleared',
-  #   just return black and white.
-  # 2. [some_group] - This means 'give me a fg or bg if it's there, else an
-  #   empty string'.
-  var gui_g: string
-  var cterm_g: string
-  var gui_attr = 'gui' .. fg_or_bg
-  var cterm_attr = 'cterm' .. fg_or_bg
+  #   dict with keys ['guifg' and 'ctermfg'] or ['guibg' and 'ctermbg']. There are
+  #   two layers of fallback values: Try to use the 'Normal' highlight if everything
+  #   on the list fails. If even 'Normal' fails, return black fg and white bg.
 
-  def RecurHiFgOrBg(hlgs: list<string>): dict<string>
-    var hidict = HlgetOrEmpty(hlgs[0])
-    gui_g = TryHex(hidict->get(gui_attr, ''))
-    cterm_g = TryHex(hidict->get(cterm_attr, ''))
-    gui_g = gui_g != '' ? gui_g : cterm_g
-    cterm_g = cterm_g != '' ? cterm_g : gui_g
+  if index(sources, 'Normal') == -1
+    add(sources, 'Normal')
+  endif
 
-    if gui_g != ''
-      return {gui: gui_g, cterm: cterm_g}
+  var result: dict<string>
+  for source in sources
+    result = HiFgOrBgJustOne(source, fg_or_bg)
+    if result.gui != ''
+      return result
     endif
-
-    if len(hlgs) == 1
-      var default: string
-      if hlgs[0] == 'Normal'
-        default = fg_or_bg == 'fg' ? '#000000' : '#ffffff'
-      else
-        default = ''
-      endif
-      return {gui: default, cterm: default}
-    endif
-
-    return RecurHiFgOrBg(hlgs[1 : ])
-  enddef
-
-  return RecurHiFgOrBg(sources)
+  endfor
+  if fg_or_bg == 'fg'
+    return {gui: '#000000', cterm: '0'}
+  endif
+  return {gui: '#ffffff', cterm: '15'}
 enddef
 
 
-def HiGrounds(sources: list<string>): dict<string>
+def HiGroundsWithFallback(sources: list<string>): dict<string>
   # Get **display** guifg, guibg, ctermfg, and ctermbg from the first viable
   # source in sources. The **display** part is important. Often, a highlight
   # group contains the instruction `gui=reverse` or `cterm=reverse`. In
@@ -333,23 +345,18 @@ def HiGrounds(sources: list<string>): dict<string>
   # eventually reassigned to other highlight groups, you may be setting the
   # explicit (exactly as stated in the highlight group) guibg with the
   # **display** guifg.
+  #
+  # This differs from HiGroundsJustOne in that the fg and bg colors may not come from
+  # the same highlight group.
 
-  var source = HlgetOrEmpty(sources[0])
-  var is_gui_reversed = source->get('gui', {})->get('reverse', v:false)
-  var is_cterm_reversed = source->get('cterm', {})->get('reverse', v:false)
-
-  var fgs = HiFgOrBg(sources, 'fg')
-  var bgs = HiFgOrBg(sources, 'bg')
-
-  if fgs.gui == '' || fgs.cterm == '' || bgs.gui == '' || bgs.cterm == ''
-    # echo "cannot find background for " .. sources[0]
-  endif
+  var fgs = HiFgOrBgWithFallback(sources, 'fg')
+  var bgs = HiFgOrBgWithFallback(sources, 'bg')
 
   return {
-    guifg: is_gui_reversed ? bgs.gui : fgs.gui,
-    guibg: is_gui_reversed ? fgs.gui : bgs.gui,
-    ctermfg: is_cterm_reversed ? bgs.cterm : fgs.cterm,
-    ctermbg: is_cterm_reversed ? fgs.cterm : bgs.cterm,
+    guifg: fgs.gui,
+    guibg: bgs.gui,
+    ctermfg: fgs.cterm,
+    ctermbg: bgs.cterm,
   }
 enddef
 
@@ -362,7 +369,7 @@ enddef
 
 def HardHi(base_hi_group: string, basename: string = ''): void
   # Create an emphasized version of a highlight group.
-  # 
+  #
   # Inputs:
   #   base_hi_group - highlight group from which to inherit default values
   #   basename - optionally pass a basename for the new highlight group, if
@@ -384,7 +391,7 @@ enddef
 
 def SoftHi(base_hi_group: string, basename: string = ''): void
   # Create a de-emphasized version of a highlight group.
-  # 
+  #
   # Inputs:
   #   base_hi_group - highlight group from which to inherit default values
   #   basename - optionally pass a basename for the new highlight group, if
@@ -399,10 +406,7 @@ def SoftHi(base_hi_group: string, basename: string = ''): void
   # if anything surprising happens, hi group will still exist, but will be
   # an exact match for base_hi_group
   hlset([hldict])
-  var grounds = HiGrounds([base_hi_group, 'Normal'])
-  if grounds.guifg == '' || grounds.ctermfg == ''
-    return
-  endif
+  var grounds = HiGroundsWithFallback([base_hi_group])
 
   var gui_mixed = MixColors(grounds.guibg, grounds.guifg, g:focalpoint_text_fade)
   if hldict->get('gui', {})->get('reverse', v:false)
@@ -444,14 +448,14 @@ def PickCurrentNowHi(candidates: list<string>): string
   endtry
 
   try
-    var statusline_nc_bg = HiGrounds(['StatusLineNC', 'Normal']).guibg
+    var statusline_nc_bg = HiGroundsWithFallback(['StatusLineNC']).guibg
     var contrast: number
     var guibg: string
     var best_contrast = 0
     var best_candidate = candidates_prime[0]
 
     for candidate in candidates_prime
-      guibg = HiGrounds([candidate]).guibg
+      guibg = HiFgOrBgJustOne(candidate, 'bg')->get('gui', '')
       if guibg == '' | continue | endif
 
       contrast = SqColorSpan(statusline_nc_bg, guibg)
@@ -514,16 +518,16 @@ def DefineNormalNC(): void
   catch
   endtry
 
-  var grounds_candidates = ['Normal']
+  var grounds_candidates = []  # will fall back to Normal hi group
   if g:focalpoint_use_pmenu
-    grounds_candidates = ['Pmenu', 'Normal']
+    grounds_candidates = ['Pmenu']
   endif
   try
-    grounds_candidates = [g:focalpoint_explicate[g:colors_name]['bg'], 'Normal']
+    grounds_candidates = [g:focalpoint_explicate[g:colors_name]['bg']]
   catch
   endtry
 
-  var grounds = HiGrounds(grounds_candidates)
+  var grounds = HiGroundsWithFallback(grounds_candidates)
   var grounds_nc = HlgetOrEmpty(grounds_candidates[0])
   grounds_nc.name = 'NormalNC'
 
