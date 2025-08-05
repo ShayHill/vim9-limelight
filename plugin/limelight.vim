@@ -59,11 +59,6 @@ if !exists('g:focalpoint_bg_fade')
   g:focalpoint_bg_fade = 0.1
 endif
 
-if !exists('g:focalpoint_use_pmenu')
-  g:focalpoint_use_pmenu = v:true
-endif
-
-
 
 # ---------------------------------------------------------------------------- #
 #
@@ -519,22 +514,17 @@ def DefineNormalNC(): void
   endtry
 
   var grounds_candidates = []  # will fall back to Normal hi group
-  if g:focalpoint_use_pmenu
-    grounds_candidates = ['Pmenu']
-  endif
   try
     grounds_candidates = [g:focalpoint_explicate[g:colors_name]['bg']]
   catch
   endtry
 
+  g:aaa = grounds_candidates
   var grounds = HiGroundsWithFallback(grounds_candidates)
   var grounds_nc = HlgetOrEmpty(grounds_candidates[0])
   grounds_nc.name = 'NormalNC'
 
   var bg_fade = g:focalpoint_bg_fade
-  if g:focalpoint_use_pmenu
-    bg_fade = 0.0
-  endif
   if explicated_fade != -1.0
     bg_fade = explicated_fade
   endif
@@ -546,14 +536,14 @@ def DefineNormalNC(): void
 
   hlset([grounds_nc])
 
-  if !g:focalpoint_use_pmenu
-    # some of the Pmenu shades are terrible (on a few, the background
-    # matches the text). If not using the Pmenu background color for
-    # shading, don't use it for popup menus either. Use our custom derived
-    # colors instead.
-    grounds_nc.name = 'Pmenu'
-    hlset([grounds_nc])
-  endif
+  # if !g:focalpoint_use_pmenu
+  #   # some of the Pmenu shades are terrible (on a few, the background
+  #   # matches the text). If not using the Pmenu background color for
+  #   # shading, don't use it for popup menus either. Use our custom derived
+  #   # colors instead.
+  #   grounds_nc.name = 'Pmenu'
+  #   hlset([grounds_nc])
+  # endif
 
   # any background defined for EndOfBuffer will prevent empty windows (like
   # terminals with no text) from shading

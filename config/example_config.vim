@@ -48,25 +48,26 @@ augroup ShadeNotCurrentWindow
   autocmd WinLeave * setl wincolor=NormalNC
 augroup END
 
-# # refresh highlight and lowlight colors when you switch colorshcemes
-# augroup ResetStatuslineHiGroups
-#   autocmd!
-#   autocmd colorscheme * g:FPReset()
-# augroup END
-
-# use Pmenu to shade unfocused windows for these colorschemes
-g:use_pmenu_to_shade = [
-  'delek',
-  'habamax',
-  'industry',
-  'koehler',
-  'lunaperche',
-  'morning',
-  'pablo',
-  'peachpuff',
-  'quiet',
-  'retrobox',
-  'torte',
-  'wildcharm',
-]
-
+g:focalpoint_explicate = {
+  PaperColor: {cn: 'DiffAdd', bg: 'MatchParen', bg_fade: 0.25},
+  blue: {bg_fade: 0.2},
+  darkblue: {bg_fade: 0.2},
+  default: {cn: 'ErrorMsg', bg: 'Pmenu', bg_fade: 0.1},
+  delek: {bg: 'Pmenu', bg_fade: 0.0},
+  elflord: {bg: 'Pmenu', bg_fade: 0.2},
+  habamax: {bg: 'Pmenu', bg_fade: 0.0},
+  industry: {bg: 'Pmenu', bg_fade: 0.0},
+  koehler: {bg: 'Pmenu', bg_fade: 0.0},
+  lunaperche: {bg: 'Pmenu', bg_fade: 0.0},
+  morning: {bg: 'Pmenu', bg_fade: 0.0},
+  murphy: {bg_fade: 0.2},
+  pablo: {bg: 'Pmenu', bg_fade: 0.0},
+  peachpuff: {bg: 'Pmenu', bg_fade: 0},
+  quiet: {bg: 'Pmenu', bg_fade: 0.0},
+  retrobox: {bg: 'Pmenu', bg_fade: 0.0},
+  ron: {bg_fade: 0.2},
+  solarized8: {bg_fade: 0.25},
+  sunbather: {cn: 'Search'},
+  torte: {bg: 'Pmenu', bg_fade: 0.0},
+  wildcharm: {bg: 'Pmenu', bg_fade: 0.0},
+}
