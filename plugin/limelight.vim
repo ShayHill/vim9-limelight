@@ -37,8 +37,6 @@ vim9script
 #
 # ---------------------------------------------------------------------------- #
 
-v:errors = []
-
 # Try to get at least this much squared Euclidean distance between the color
 # of the 'Current Now' statusline and the 'Not Current' (StatusLineNC)
 # statusline. If no candidate is found that meets this criterion, use the
@@ -117,7 +115,7 @@ def ValueToColorIndex(v: number): number
 enddef
 
 
-def SqEuclidean(vec_a: list<number>, vec_b: list<number>): number
+export def SqEuclidean(vec_a: list<number>, vec_b: list<number>): number
   # Squared Euclidean distance between two vectors
   var diffs = map(copy(vec_a), (i, v) => v - vec_b[i]) 
   var terms = map(copy(diffs), (_, v) => v * v)
@@ -140,10 +138,6 @@ def SqColorSpan(hex_color_a: string, hex_color_b: string): number
   var rgb_b = HexToRgb(hex_color_b)
   return SqEuclidean(rgb_a, rgb_b)
 enddef
-
-
-if assert_equal(SqEuclidean([0, 0, 1], [0, 0, 0]), 1) | throw v:errors[-1] | endif
-if assert_equal(SqEuclidean([255, 0, 0], [0, 0, 0]), 65025) | throw v:errors[-1] | endif
 
 
 def HexToCterm(hex_color: string): string
@@ -178,7 +172,7 @@ enddef
 
 
 # The first 16 terminal colors (If the user hasn't changed them).
-const TERM_COLORS = [
+export const TERM_COLORS = [
   '#000000', '#800000', '#008000', '#808000',
   '#000080', '#800080', '#008080', '#c0c0c0',
   '#808080', '#ff0000', '#00ff00', '#ffff00',
@@ -213,7 +207,7 @@ def CtermToHex(cterm_color: string): string
 enddef
 
 
-def TryHex(color: string): string
+export def TryHex(color: string): string
   # Try to get a hex color from one of the (too) many color arguments Vim
   # allows. Return '' if failed.
   # Inputs:
@@ -245,13 +239,6 @@ def TryHex(color: string): string
   return hex
 enddef
 
-if assert_equal(TryHex('#ffffff'), '#ffffff') | throw v:errors[-1] | endif
-if assert_equal(TryHex('0'), TERM_COLORS[0]) | throw v:errors[-1] | endif
-if assert_equal(TryHex(''), '') | throw v:errors[-1] | endif
-if assert_equal(TryHex('garbage'), '') | throw v:errors[-1] | endif
-if assert_equal(TryHex('Red'), '#ff0000') | throw v:errors[-1] | endif
-if assert_equal(TryHex('White'), '#ffffff') | throw v:errors[-1] | endif
-
 
 def MixColors(hex_color_a: string, hex_color_b: string, ratio: float): string
   # Mix two hex colors.
@@ -268,7 +255,7 @@ enddef
 #
 # ---------------------------------------------------------------------------- #
 
-def HlgetOrEmpty(hi_group: string): dict<any>
+export def HlgetOrEmpty(hi_group: string): dict<any>
   # Get a highlight group dictionary. If the highlight group does not exist,
   # return an empty dictionary.
   var hi_dict: dict<any>
@@ -280,7 +267,6 @@ def HlgetOrEmpty(hi_group: string): dict<any>
   return hi_dict
 enddef
 
-if assert_equal(HlgetOrEmpty('DoesNotExist'), {}) | throw v:errors[-1] | endif
 
 def HiFgOrBg(sources: list<string>, fg_or_bg: string): dict<string>
   # Get either the fg or bg colors from the first viable candidate in a list
