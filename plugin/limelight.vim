@@ -65,6 +65,11 @@ if !exists('g:focalpoint_use_pmenu')
   g:focalpoint_use_pmenu = v:true
 endif
 
+if get(g:, 'limelight_source_default_config', v:false) == v:true
+  var plugin_dir = fnamemodify(expand('<sfile>'), ':h')
+  execute 'source ' .. plugin_dir .. '/example_config.vim'
+endif
+
 
 # ---------------------------------------------------------------------------- #
 #
