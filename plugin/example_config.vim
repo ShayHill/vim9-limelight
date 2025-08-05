@@ -17,26 +17,26 @@ set laststatus=2
 # g:focalpoint_bg_fade = 0.1
 
 def g:GenerateStatusline(winid: number): string
-    # build a statusline string using vim9-focalpoint
-    
-    var stl = ""
+  # build a statusline string using vim9-focalpoint
+  
+  var stl = ""
 
-    # g:FPHiSelect chooses a highlight group based on winid
-    var hi_group = g:FPHiSelect(winid, 'StatusLine', 'StatusLineNC', 'StatusLineCN')
+  # g:FPHiSelect chooses a highlight group based on winid
+  var hi_group = g:FPHiSelect(winid, 'StatusLine', 'StatusLineNC', 'StatusLineCN')
 
-    # g:FPSelect chooses a string based on winid
-    var state = g:FPSelect(winid, 'STATUS LINE', 'NOT CURRENT', 'CURRENT NOW')
+  # g:FPSelect chooses a string based on winid
+  var state = g:FPSelect(winid, 'STATUS LINE', 'NOT CURRENT', 'CURRENT NOW')
 
-    # set your highlighting
-    stl ..= hi_group
+  # set your highlighting
+  stl ..= hi_group
 
-    # show the state, to help show what is going on
-    stl ..= ' ' .. state .. ' --->'
+  # show the state, to help show what is going on
+  stl ..= ' ' .. state .. ' --->'
 
-    # show a few of the usual items
-    stl ..= ' %f %h%w%m%r %=%(%l,%c%V %= %P%'
+  # show a few of the usual items
+  stl ..= ' %f %h%w%m%r %=%(%l,%c%V %= %P%'
 
-    return stl
+  return stl
 enddef
 
 set statusline=%!GenerateStatusline(g:statusline_winid)
@@ -56,18 +56,18 @@ augroup END
 
 # use Pmenu to shade unfocused windows for these colorschemes
 g:use_pmenu_to_shade = [
-    'delek',
-    'habamax',
-    'industry',
-    'koehler',
-    'lunaperche',
-    'morning',
-    'pablo',
-    'peachpuff',
-    'quiet',
-    'retrobox',
-    'torte',
-    'wildcharm',
+  'delek',
+  'habamax',
+  'industry',
+  'koehler',
+  'lunaperche',
+  'morning',
+  'pablo',
+  'peachpuff',
+  'quiet',
+  'retrobox',
+  'torte',
+  'wildcharm',
 ]
 
 augroup ResetStatuslineHiGroups
