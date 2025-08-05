@@ -557,17 +557,31 @@ def DefineNormalNC(): void
 enddef
 
 
-def g:FPReset(): void
+def g:LimelightReset(): void
   # Reset all the hi groups.
+  # Reset the hilight groups defined by Limelight and fix some errors that can be
+  # caused by switching to/from more/less featureful colorschemes. These errors are
+  # not related to Limelight, but this is as good a place as any to fix them.
+  #
   # Call this when the colorscheme changes
   var cursor_hi = PickCurrentNowHi(g:focalpoint_cn_candidates)
   SplitHi('StatusLine')
   SplitHi('StatusLineNC')
   SplitHi(cursor_hi, 'StatusLineCN')
   DefineNormalNC()
+  # address errors not related to Limelight
+  highlight link LspErrorHighlight Error
+  highlight link LspWarningHighlight Todo
+  highlight link LspInformationHighlight Normal
+  highlight link LspHintHighlight Normal
 enddef
 
-g:FPReset()
+g:LimelightReset()
+
+augroup ResetStatuslineHiGroups
+  autocmd!
+  autocmd colorscheme *  g:LimelightReset()
+augroup END
 
 def WinState(winid: number): number
   # Return the state of the window with winid

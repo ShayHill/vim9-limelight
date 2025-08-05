@@ -48,11 +48,11 @@ augroup ShadeNotCurrentWindow
   autocmd WinLeave * setl wincolor=NormalNC
 augroup END
 
-# refresh highlight and lowlight colors when you switch colorshcemes
-augroup ResetStatuslineHiGroups
-  autocmd!
-  autocmd colorscheme * g:FPReset()
-augroup END
+# # refresh highlight and lowlight colors when you switch colorshcemes
+# augroup ResetStatuslineHiGroups
+#   autocmd!
+#   autocmd colorscheme * g:FPReset()
+# augroup END
 
 # use Pmenu to shade unfocused windows for these colorschemes
 g:use_pmenu_to_shade = [
@@ -70,7 +70,3 @@ g:use_pmenu_to_shade = [
   'wildcharm',
 ]
 
-augroup ResetStatuslineHiGroups
-  autocmd!
-  autocmd colorscheme * g:focalpoint_use_pmenu = index(g:use_pmenu_to_shade, g:colors_name) != -1 ? v:true : v:false | g:FPReset()
-augroup END
