@@ -1,99 +1,111 @@
-# vim9-focalpoint
+# vim9-limelight
 
 Shade unfocused windows. Give a bright statusline color for active windows *when splits are open*.
 
-Statuslines in Vim are by default highlighted with the StatusLine and StatusLineNC (StatusLine Not Current) highlight groups. When no splits are open, you will only see the StatusLine highlight group. When splits *are* open, the focused split will have the StatusLine highlight and unfocused splits will have the StatusLineNC highlight.
-
-Often, I would prefer more contrast between these groups, so this module creates a third highlight group for statuslines, StatusLineCN (StatusLine Current Now), plus some variants. When no splits are open, you will only see the StatusLine highlight group (a nice, coordinating color as the colorscheme designer intended it). When splits *are* open, the focused split will have the high-contrast StatusLineCN highlight and unfocused splits will have the StatusLineNC highlight.
-
-If that's not enough help, the vim9-focalpoint will also shade unfocused windows when splits are open.
-
 | ![focalpoint off](doc/focalpoint_off.jpg) | ![focalpoint on](doc/focalpoint_on.jpg) |
 | - | - |
-| without focalpoint | with focalpoint |
+| without limelight | with limelight |
 
-Here it is with some of the default colorschemes: [vim9-focalpoint](https://www.youtube.com/watch?v=XkErei9LtSU)
+## One-line default config
 
-## What do you get?
+Add one of these to your vimrc:
 
-You will not see a change after installing this plugin. Everything you get is "under the hood" and will require some light assembly. (see file `example_config.vim`)
+`g:limelight_source_simple_config = v:true`
 
-### New highlight groups
+`g:limelight_source_normal_config = v:true`
 
-Vim9-focalpoint creates 8 new highlight groups, 7 for statuslines, and 1 for window backgrounds. This gives a total of 2 background highlight groups and 9 StatusLine highlight groups. Beneath each highlighting group, I've included the definition Vim9-focalpoint will create if you are using the Habamax colorscheme. You don't have to use any of these, but they are provided for your convenience. You can use `g:LimelightHiSelect` to select from any highlight group you desire.
+The simple config will will give you something to work from. It is created to *not* overwhelm you. It prints the window state in the statusline, so it's probably not something you're going to want to live with long term.
 
-#### The statusline when only one split is open
+The normal config may be all you'll ever need. It's at its best if you are using git and pathogen.
 
-```
-StatusLine xxx term=bold,reverse ctermfg=234 ctermbg=247 guifg=#1c1c1c guibg=#9e9e9e
-StatusLineHard xxx term=bold,reverse cterm=bold ctermfg=234 ctermbg=247 gui=bold guifg=#1c1c1c guibg=#9e9e9e
-StatusLineSoft xxx term=bold,reverse ctermfg=242 ctermbg=247 guifg=#707070 guibg=#9e9e9e
-```
+Both example configs shade unfocused windows. To change this or make other changes, I recommend copying the example into your vim folder and sourcing it from your vimrc. You can find the example configs in the `config` folder of this repository.
 
-#### The statusline of unfocused splits when splits are open
+Here it is with an assortment of colorschemes: [vim9-limelight](https://www.youtube.com/watch?v=xiXn2QDfUfs)
 
-```
-StatusLineNC   xxx term=reverse ctermfg=234 ctermbg=243 guifg=#1c1c1c guibg=#767676
-StatusLineNCHard xxx term=bold,reverse cterm=bold ctermfg=234 ctermbg=243 gui=bold guifg=#1c1c1c guibg=#767676
-StatusLineNCSoft xxx term=reverse ctermfg=240 ctermbg=243 guifg=#565656 guibg=#767676
-```
+# More config
 
-#### The statusline of focused splits when splits are open
+Statuslines in Vim are by default highlighted with the StatusLine and StatusLineNC (StatusLine Not Current) highlight groups. When no splits are open, you will only see the StatusLine highlight group. When splits are open, the focused split will have the same StatusLine highlight and unfocused splits will have the StatusLineNC highlight.
 
-```
-StatusLineCN   xxx term=reverse cterm=reverse ctermfg=215 ctermbg=234 gui=reverse guifg=#ffaf5f guibg=#1c1c1c
-StatusLineCNHard xxx term=bold,reverse cterm=bold,reverse ctermfg=215 ctermbg=234 gui=bold,reverse guifg=#ffaf5f guibg=#1c1c1c
-StatusLineCNSoft xxx term=reverse cterm=reverse ctermfg=215 ctermbg=137 gui=reverse guifg=#ffaf5f guibg=#af7b47
-```
+Often, I would prefer more contrast between these groups, so this module creates a third highlighting group for statuslines, StatusLineCN (StatusLine Current Now). When no splits are open, you will only see the StatusLine highlight group (a nice, coordinating color as the colorscheme designer intended it). When splits are open, the focused split will have the high-contrast StatusLineCN highlight and unfocused splits will have the StatusLineNC highlight.
 
-#### The background color of focused and unfocused splits
+If that's not enough contrast, Limelight will also shade unfocused windows when splits are open.
 
-```
-Normal         xxx ctermfg=250 ctermbg=234 guifg=#bcbcbc guibg=#1c1c1c
-NormalNC       xxx ctermbg=237 guibg=#3a3a3a
-```
+## Eight new highlight groups
 
-### Two functions for choosing content and format based on window state
+Limelight creates 8 new highlight groups for a total of 9 StatusLine highlight groups and 2 background highlight groups.
 
-~~~vim
+- **StatusLineHard** (bold text for default statusline)
+- StatusLine (previously existing)
+- **StatusLineSoft** (grayed out text for default statusline)
+- **StatusLineNCHard** (bold text for unfocused statusline)
+- StatusLineNC (previously existing)
+- **StatusLineNCSoft** (grayed out text for unfocused statusline)
+- **StatusLineCNHard** (bold text for focused statusline with splits)
+- **StatusLineCN** (normal text for focused statusline with splits)
+- **StatusLineSoft** (grayed out test for focused statusline with splits)
+- Normal (previously existing)
+- **NormalNC** (Normal with a faded background color for shaded windows)
+
+## Two functions for choosing content and format based on window state
+
+Even if you aren't familiar with vim9script, I think the functions themselves are the best explanation.
+
+~~~python
 def g:LimelightSelect(
     winid: number,
     statusline: string,
     not_current: string,
     current_now: string
-): string
-~~~
+  ): string
+  # Select a string for the statusline based on winid
+  # * if win is focused, only one window visible, statusline
+  # * if win is unfocused, not_current
+  # * if win is focused AND there are open splits, current_now
+  return [statusline, not_current, current_now][WinState(winid)]
+enddef
 
-This function will look at the winid and decide if the window is `normal` (only one split is open), `not_current` (unfocused split), or `current_now` (focused split when splits are open). It will then select and return the appropriate string as a highlight group. This can be used to insert different text in different states.
-
-~~~vim
 def g:LimelightHiSelect(
     winid: number,
     statusline: string,
     not_current: string,
     current_now: string
-): string
+  ): string
+  # Select a highlight string for the statusline based on winid. The difference
+  # between this and LimelightSelect is that LimelightHiSelect wraps highlight
+  # groups in the correct symbols to be inserted directly into a statusline
+  # string.
+  return g:LimelightSelect(
+    winid,
+    '%#' .. statusline .. '#',
+    '%#' .. not_current .. '#',
+    '%#' .. current_now .. '#',
+  )
+enddef
 ~~~
 
-The same as above, but wraps each string argument in `%#string#` so that it can be directly inserted into a statusline string. See `h: statusline` for instructions on building a statusline.
+The idea is to call these from a statusline-generating function. See `:h statusline`.
 
-### Putting it all together
+This function will have access to the `g:statusline_winid` variable, which Vim generates automatically. We will use that variable to select highlight groups based on one of three states:
 
-I've included `example_config.vim`. You can work from that or use the examples to see how to build your own. Here's an expanded description of how everything works.
+- **normal**: only one split is open
+- **not_current**: splits open, but this window is not in focus
+- **current_now**: splits open, and this window is in focus
 
-To use these functions, you will build a statusline-generating function that takes one argument, `g:statusline_winid`, that Vim generates on it's own. After creating this function, you will tell Vim to use it to generate your statuslines. `set statusline=%!GenerateStatusline(g:statusline_winid)`
+### A minimal working config
 
-~~~vim
+~~~python
+vim9script
+
 set laststatus=2
 
-def g:GenerateStatusline(winid: number): string
+def g:GenerateStatusline(): string
     var stl = ""
 
     # g:LimelightHiSelect chooses a highlight group based on winid
-    var hi_group = g:LimelightHiSelect(winid, 'StatusLine', 'StatusLineNC', 'StatusLineCN')
+    var hi_group = g:LimelightHiSelect(g:statusline_winid, 'StatusLine', 'StatusLineNC', 'StatusLineCN')
 
     # g:LimelightSelect chooses a string based on winid
-    var state = g:LimelightSelect(winid, 'STATUS LINE', 'NOT CURRENT', 'CURRENT NOW')
+    var state = g:LimelightSelect(g:statusline_winid, 'STATUS LINE', 'NOT CURRENT', 'CURRENT NOW')
 
     # set your highlighting
     stl ..= hi_group
@@ -116,110 +128,76 @@ I've provided the 7 new highlight groups for convenience, but you can use `g:Lim
 
 `:hi<CR>` to see what's already defined.
 
-### Window shading
+## Configuration
 
-Vim does this almost by itself, you just need a simple autocmd and a highlight group to use. A few colorschemes have such a highlight group, but Vim9-focalpoint creates such a group for *any* colorscheme. Use NormalNC for this purpose.
+### statusline colors
 
-~~~vim
-augroup ShadeNotCurrentWindow
-  autocmd!
-  autocmd WinEnter * setl wincolor=Normal
-  autocmd WinLeave * setl wincolor=NormalNC
-augroup END
-~~~
-
-That's all you need to shade your "not current" windows. If you don't want it, don't put the autocmd in your vimrc.
-
-### What else?
-
-The statusline function is called a lot, so I've kept in lean by cacheing the newly created highlight groups. If you change colorschemes, you'll want to call g:FPReset() to create new highlight groups from the new colorscheme.
+Limelight is configured to search for a contrasting statusline color in these highlight groups, most preferred to least.
 
 ~~~vim
-augroup ResetStatuslineHiGroups
-  autocmd!
-  autocmd colorscheme * g:FPReset()
-augroup END
+g:limelight_cn_candidates = ['IncSearch', 'Search', 'ErrorMsg']
 ~~~
 
-That will re-create coordinating StatusLineHard, StatusLineCN, NormalNC, etc. groups from the new colorscheme.
-
-## Configuration?
-
-Not really. I like to change colorschemes depending on the lighting and whether I'm wearing my tinted computer glasses. It's always bothered me that, with statusline plugins, I've had to switch statusline themes when I switched colorschemes to keep everything looking nice. Vim9-focalpoint does not use colorschemes. It selects/creates colors from whatever colorscheme you are using. If you use the 9 default highlight groups and 2 default background colors, this is what you'll get: colors selected or created (by mixing) from your current colorscheme. That being said, there are a few things you can tweak.
-
-### statusbar colors
-
-Vim9-statusline is configured to search for a contrasting statusline color in these highlight groups, most preferred to least.
-
-~~~vim
-g:focalpoint_cn_candidates = ['IncSearch', 'Search', 'ErrorMsg']
-~~~
-
-You can re-order, shrink, or expand this list in your vimrc. Be aware that if vim9-focalpoint cannot find something appropriate in your list, it is written to fail silently and revert to the default Vim statusline highlight behavior.
+You can re-order, shrink, or expand this list in your vimrc. Be aware that if Limelight cannot find something appropriate in your list, it is written to fail silently and revert to the default Vim statusline highlight behavior.
 
 ### grayed-out text
 
-Vim9-statusline "grays out" text for the [Basename]Soft hightlight groups by mixing foreground and background colors at a specified ratio. You can change this ratio in your vimrc. Be aware that terminal colors are defined in wide, discrete colors (there are only 256 of them in total), so a small ratio might not be enough mixing to change the text color at all. A too-large ratio might push the text color all the way into the background color.
+Limelight "grays out" text for the [Basename]Soft hightlight groups by mixing foreground and background colors at a specified ratio. You can change this ratio in your vimrc. Be aware that terminal colors are defined in wide, discrete colors (there are only 256 of them in total), so a small ratio might not be enough mixing to change the text color at all. A too-large ratio might push the text color all the way into the background color.
 
 ~~~vim
-g:focalpoint_text_fade = 0.65
+g:limelight_text_fade = 0.65
 ~~~
 
 ### background shading
 
-Vim9-statusline creates the NormalNC highlight group by mixing the default (Normal) foreground and background colors at a specified ratio. You can change this ration in your vimrc. As with focalpoint_text_fade, be aware that too small or too large ratios can eliminate the effect entirely in the terminal.
+Limelight creates the NormalNC highlight group by mixing the default (Normal) foreground and background colors at a specified ratio. You can change this ratio in your vimrc. As with limelight_text_fade, be aware that too small or too large ratios can eliminate the effect entirely in the terminal.
 
 ~~~vim
-g:focalpoint_bg_fade = 0.1
+g:limelight_bg_fade = 0.1
 ~~~
 
-### more background shading
+### colorscheme-specific settings
 
-Vim9-statusline creates a shaded background color by mixing foreground and background colors at a specified ratio. This creates a nice, muted shade for most achromatic backgrounds, but some colorschemes (peachpuff is a nice example) have a more chromatic "lowlight" color specified for their popup menus. You can set `g:focalpoint_use_pmenu = v:true` to shade unfocused windows with the Pmenu background instead of the custom background created by Vim9-statusline.
+The above setting define a default strategy for creating highlight groups from any colorscheme. You can specify per-colorscheme settings with a dictionary of dictionaries.
 
-| ![peachpuff focalpoint](doc/peachpuff_focalpoint.jpg) | ![focalpoint on](doc/peachpuff_pmenu.jpg) |
-| - | - |
-| `g:focalpoint_use_pmenu = v:false` | `g:focalpoint_use_pmenu = v:true` |
-
-Some of these Pmenu backgrounds are terrible (white background with white text), so you may wish to specify `g:focalpoint_use_pmenu = v:true` for some colorschemes and `v:false` for others. You can accomplish that with this snippet.
-
-~~~vim
-g:use_pmenu_to_shade = [
-    'delek',
-    'habamax',
-    'industry',
-    'koehler',
-    'lunaperche',
-    'morning',
-    'pablo',
-    'peachpuff',
-    'quiet',
-    'retrobox',
-    'torte',
-    'wildcharm',
-]
-
-augroup ResetStatuslineHiGroups
-  autocmd!
-  autocmd colorscheme * g:focalpoint_use_pmenu = index(g:use_pmenu_to_shade, g:colors_name) != -1 ? v:true : v:false | g:FPReset()
-augroup END
+~~~python
+g:limelight_config = {
+  blue: {bg_fade: 0.2, text_fade: 0.5},
+  default: {cn: 'ErrorMsg', bg: 'Pmenu', bg_fade: 0.2, text_fade: 0.5},
+  zaibatsu: {set_pmenu: v:true}
+}
+# -------------------------------------------------------------------------------- #
+# Keys for colorscheme-specific configuration:
+#
+#   cn: highlight group for active statusbar when split
+#
+#   bg: highlight group for shaded windows
+#
+#   bg_fade: fade factor for shaded windows. 0.0 means no fade, 1.0 means full fade.
+#
+#   text_fade: fade factor for 'soft' text in the statusline.
+#
+#   set_pmenu: bool - replace popup-window highlight group with NormalNC.
+# -------------------------------------------------------------------------------- #
 ~~~
 
-#### bonus feature
+#### per-colorscheme config examples
 
-Some of the included colorschemes are nice (e.g., zaibatsu) with one glaring exception: their popup-menu backgrounds are unreadable. If `g:focalpoint_use_pmenu = v:false` (the default), vim9-focalpoint will replace the theme Pmenu highlight group with the NormalNC color created by vim9-focalpoint.
+Limelight creates a shaded background color by mixing foreground and background colors at a specified ratio. This creates a nice, muted shade for most achromatic backgrounds, but some colorschemes (peachpuff is a nice example) have a more chromatic "lowlight" color specified for their popup menus. 
 
-| ![zaibatsu_off](doc/zaibatsu_off.jpg) | ![zaibatsu on](doc/zaibatsu_on.jpg) |
+| ![peachpuff default](doc/peachpuff_focalpoint.jpg) | ![peachpuff configured](doc/peachpuff_pmenu.jpg) |
 | - | - |
-| zaibatsu without focalpoint | zaibatsu with focalpoint |
+| default peachpuff | `peachpuff {bg: 'Pmenu', bg_fade: 0.0}` |
 
-### roll your own
+Conversely, some colorscheme Pmenu backgrounds are terrible (white background with white text). Use key `set_pmenu` to replace the Pmenu background with the NormalNC color created by Limelight.
 
-You can also use your own highlight groups in your GenerateStatusline function. They won't change with the colorscheme, but that might be what you want. You could build something out with triangle separators and multiple colors if that's what you wanted to do.
+| ![zaibatsu_default](doc/zaibatsu_off.jpg) | ![zaibatsu configured](doc/zaibatsu_on.jpg) |
+| - | - |
+| default zaibatsu | `zaibatsu {set_pmenu: v:true}` |
 
 ## What if I only want the statusline or only want the window shading?
 
-Leave out the relevant parts from your vimrc, and you won't get statusline enhancement or unfocused window shading. You will have a few extra highlight groups defined, but that's it. No extra functions will be called after startup. The overhead for the unused functionality will be exactly zero.
+Leave out the relevant parts from your vimrc, and you won't get statusline enhancement or unfocused window shading.
 
 ## What if I don't use vim9script in my vimrc?
 
