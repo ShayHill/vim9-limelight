@@ -148,4 +148,5 @@ g:focalpoint_explicate = {
   sunbather: {cn: 'Search'},
   torte: {bg: 'Pmenu', bg_fade: 0.0},
   wildcharm: {bg: 'Pmenu', bg_fade: 0.0},
+  zaibatsu: {set_pmenu: v:true}
 }

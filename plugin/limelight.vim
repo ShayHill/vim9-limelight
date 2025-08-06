@@ -610,14 +610,16 @@ def DefineNormalNC(): void
 
   hlset([grounds_nc])
 
-  # if !g:focalpoint_use_pmenu
-  #   # some of the Pmenu shades are terrible (on a few, the background
-  #   # matches the text). If not using the Pmenu background color for
-  #   # shading, don't use it for popup menus either. Use our custom derived
-  #   # colors instead.
-  #   grounds_nc.name = 'Pmenu'
-  #   hlset([grounds_nc])
-  # endif
+  # overwrite the Pmenu hi group if user requests it
+  var do_set_pmenu = v:false
+  try
+    do_set_pmenu = g:focalpoint_explicate[g:colors_name]['set_pmenu']
+  catch
+  endtry
+  if do_set_pmenu
+    grounds_nc.name = 'Pmenu'
+    hlset([grounds_nc])
+  endif
 
   # any background defined for EndOfBuffer will prevent empty windows (like
   # terminals with no text) from shading
@@ -625,7 +627,7 @@ def DefineNormalNC(): void
 enddef
 
 
-def g:LimelightReset(): void
+def LimelightReset(): void
   # Reset all the hi groups.
   # Reset the hilight groups defined by Limelight and fix some errors that can be
   # caused by switching to/from more/less featureful colorschemes. These errors are
@@ -644,11 +646,11 @@ def g:LimelightReset(): void
   highlight link LspHintHighlight Normal
 enddef
 
-g:LimelightReset()
+LimelightReset()
 
 augroup ResetStatuslineHiGroups
   autocmd!
-  autocmd colorscheme *  g:LimelightReset()
+  autocmd colorscheme *  LimelightReset()
 augroup END
 
 def WinState(winid: number): number
