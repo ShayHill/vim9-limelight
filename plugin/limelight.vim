@@ -50,7 +50,6 @@ if !exists('g:focalpoint_cn_candidates')
   g:focalpoint_cn_candidates = ['IncSearch', 'Search', 'ErrorMsg']
 endif
 
-g:focalpoint_text_fade = .65
 if !exists('g:focalpoint_text_fade')
   g:focalpoint_text_fade = 0.65
 endif
@@ -170,7 +169,6 @@ export const TERM_COLORS = [
   '#0000ff', '#ff00ff', '#00ffff', '#ffffff'
 ]
 
-
 def CtermToHex(cterm_color: string): string
   # An inverse of the transformation in HexToCterm. Not the same result as a
   # simple map, but keeping consistent with Hex2Cterm.
@@ -284,6 +282,7 @@ def HiFgOrBgJustOne(source: string, fg_or_bg: string): dict<string>
     cterm_attr = cterm_attr == 'ctermfg' ? 'ctermbg' : 'ctermfg'
   endif
 
+
   gui_g = TryHex(hidict->get(gui_attr, ''))
   cterm_g = TryHex(hidict->get(cterm_attr, ''))
   gui_g = gui_g != '' ? gui_g : cterm_g
@@ -311,7 +310,9 @@ def HiFgOrBgWithFallback(sources: list<string>, fg_or_bg: string): dict<string>
   # Returns:
   #   dict with keys ['guifg' and 'ctermfg'] or ['guibg' and 'ctermbg']. There are
   #   two layers of fallback values: Try to use the 'Normal' highlight if everything
-  #   on the list fails. If even 'Normal' fails, return black fg and white bg.
+  #   on the list fails. If even 'Normal' fails, return black fg and white bg. Will
+  #   always return hex values, even for cterm colors. These will need to be
+  #   converted back for assignent to hi cterm values.
 
   if index(sources, 'Normal') == -1
     add(sources, 'Normal')
@@ -325,9 +326,9 @@ def HiFgOrBgWithFallback(sources: list<string>, fg_or_bg: string): dict<string>
     endif
   endfor
   if fg_or_bg == 'fg'
-    return {gui: '#000000', cterm: '0'}
+    return {gui: '#000000', cterm: '#000000'}
   endif
-  return {gui: '#ffffff', cterm: '15'}
+  return {gui: '#ffffff', cterm: '#ffffff'}
 enddef
 
 
@@ -383,6 +384,32 @@ def HardHi(base_hi_group: string, basename: string = ''): void
   hlset([hldict])
 enddef
 
+def LogMessage(message: string): void
+    var log_file = expand('~/vimscript_log.txt')
+
+    writefile([message], log_file, 'a')
+
+    echo message
+enddef
+
+def IsGuiReversed(hi_dict: dict<any>): bool
+  # Check if a highlight group is reversed in the GUI.
+  # Inputs:
+  #   hi_dict - highlight group dictionary
+  # Returns:
+  #   true if the highlight group is reversed, false otherwise
+  return hi_dict->get('gui', {})->get('reverse', v:false) ||
+         hi_dict->get('gui', {})->get('standout', v:false)
+enddef
+
+def IsCtermReversed(hi_dict: dict<any>): bool
+  # Check if a highlight group is reversed in the terminal.
+  # Inputs:
+  #   hi_dict - highlight group dictionary
+  # Returns:
+  #   true if the highlight group is reversed, false otherwise
+  return hi_dict->get('cterm', {})->get('reverse', v:false)
+enddef
 
 def SoftHi(base_hi_group: string, basename: string = ''): void
   # Create a de-emphasized version of a highlight group.
@@ -403,19 +430,22 @@ def SoftHi(base_hi_group: string, basename: string = ''): void
   hlset([hldict])
   var grounds = HiGroundsWithFallback([base_hi_group])
 
-  var gui_mixed = MixColors(grounds.guibg, grounds.guifg, g:focalpoint_text_fade)
-  if hldict->get('gui', {})->get('reverse', v:false)
-    hldict.guibg = gui_mixed
+  var text_fade = g:focalpoint_text_fade
+  try
+    text_fade = g:focalpoint_explicate[g:colors_name]['text_fade']
+  catch
+  endtry
+
+  if IsGuiReversed(hldict)
+    hldict.guibg = MixColors(grounds.guifg, grounds.guibg, text_fade)
   else
-    hldict.guifg = gui_mixed
+    hldict.guifg = MixColors(grounds.guibg, grounds.guifg, text_fade)
   endif
 
-  var cterm_mixed = MixColors(grounds.ctermbg, grounds.ctermfg, g:focalpoint_text_fade)
-  cterm_mixed = HexToCterm(cterm_mixed)
-  if hldict->get('cterm', {})->get('reverse', v:false)
-    hldict.ctermbg = cterm_mixed
+  if IsCtermReversed(hldict)
+    hldict.ctermbg = HexToCterm(MixColors(grounds.ctermfg, grounds.ctermbg, text_fade))
   else
-    hldict.ctermfg = cterm_mixed
+    hldict.ctermfg = HexToCterm(MixColors(grounds.ctermbg, grounds.ctermfg, text_fade))
   endif
 
   hlset([hldict])
@@ -519,7 +549,6 @@ def DefineNormalNC(): void
   catch
   endtry
 
-  g:aaa = grounds_candidates
   var grounds = HiGroundsWithFallback(grounds_candidates)
   var grounds_nc = HlgetOrEmpty(grounds_candidates[0])
   grounds_nc.name = 'NormalNC'
