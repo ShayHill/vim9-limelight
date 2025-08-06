@@ -40,10 +40,15 @@ vim9script
 #
 # ---------------------------------------------------------------------------- #
 
+if exists("g:loaded_limelight") || &cp
+  finish
+endif
+g:loaded_limelight = v:true
+
 def LogMessage(message: string): void
-    var log_file = expand('~/vimscript_log.txt')
-    writefile([message], log_file, 'a')
-    echo message
+  var log_file = expand('~/vimscript_log.txt')
+  writefile([message], log_file, 'a')
+  echo message
 enddef
 
 # Try to get at least this much squared Euclidean distance between the color
@@ -91,6 +96,7 @@ enddef
 def RgbToHex(rgb: list<number>): string
   # Convert three floats [0 .. 255] to a 16-bit color hex string (e.g.,
   # '#ffffff')
+  # TODO: use bitshift operator
   var three_hex = map(copy(rgb), (_, v) => printf('%02x', v))
   return '#' .. join(three_hex, '')
 enddef
@@ -152,6 +158,7 @@ def HexToCterm(hex_color: string): string
   # Returns
   #   [16 .. 255] 1-15 (user-defined colors) are ignored
   var rgb = HexToRgb(hex_color)
+  # TODO: remove redundant call to HexToRgb
   var [red, g, blue] = HexToRgb(hex_color)
 
   # nearest xterm color [0 .. 215] => [16 .. 231]

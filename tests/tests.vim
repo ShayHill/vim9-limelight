@@ -1,6 +1,6 @@
 vim9script
 
-import "./limelight.vim"
+import "../plugin/limelight.vim"
 
 v:errors = []
 
