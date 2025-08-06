@@ -195,10 +195,9 @@ Conversely, some colorscheme Pmenu backgrounds are terrible (white background wi
 | - | - |
 | default zaibatsu | `zaibatsu {set_pmenu: v:true}` |
 
-## What if I only want the statusline or only want the window shading?
-
-Leave out the relevant parts from your vimrc, and you won't get statusline enhancement or unfocused window shading.
-
 ## What if I don't use vim9script in my vimrc?
 
 If you know just a bit of vimscript, you can revert the above functions to classic vimscript. You can run the plugin if you're using Vim9+, no matter what style you use in your vimrc. If you don't want to script anything, you could create a new file in your vimfolder, type vim9script on the top line, paste the above code sections into it, then source that from your vimrc.
+
+
+![limelight, 1952](doc/Film_756_Limelight_original.jpg)
