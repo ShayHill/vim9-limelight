@@ -32,9 +32,9 @@ g:limelight_cn_candidates = ['IncSearch', 'Search', 'ErrorMsg']
 g:limelight_text_fade = 0.65
 g:limelight_bg_fade = 0.1
 
+
 # colorscheme-specific settings
 g:limelight_config = {
-  PaperColor: {cn: 'DiffAdd', bg: 'MatchParen', bg_fade: 0.25},
   blue: {bg_fade: 0.2},
   darkblue: {bg_fade: 0.2},
   default: {cn: 'ErrorMsg', bg: 'Pmenu', bg_fade: 0.1},
@@ -51,8 +51,6 @@ g:limelight_config = {
   quiet: {bg: 'Pmenu', bg_fade: 0.0},
   retrobox: {bg: 'Pmenu', bg_fade: 0.0},
   ron: {bg_fade: 0.2},
-  solarized8: {bg_fade: 0.25},
-  sunbather: {cn: 'Search'},
   torte: {bg: 'Pmenu', bg_fade: 0.0},
   wildcharm: {bg: 'Pmenu', bg_fade: 0.0},
   zaibatsu: {set_pmenu: v:true}
