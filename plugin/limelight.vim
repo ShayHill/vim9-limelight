@@ -37,6 +37,12 @@ vim9script
 #
 # ---------------------------------------------------------------------------- #
 
+def LogMessage(message: string): void
+    var log_file = expand('~/vimscript_log.txt')
+    writefile([message], log_file, 'a')
+    echo message
+enddef
+
 # Try to get at least this much squared Euclidean distance between the color
 # of the 'Current Now' statusline and the 'Not Current' (StatusLineNC)
 # statusline. If no candidate is found that meets this criterion, use the
@@ -169,6 +175,7 @@ export const TERM_COLORS = [
   '#0000ff', '#ff00ff', '#00ffff', '#ffffff'
 ]
 
+
 def CtermToHex(cterm_color: string): string
   # An inverse of the transformation in HexToCterm. Not the same result as a
   # simple map, but keeping consistent with Hex2Cterm.
@@ -282,7 +289,6 @@ def HiFgOrBgJustOne(source: string, fg_or_bg: string): dict<string>
     cterm_attr = cterm_attr == 'ctermfg' ? 'ctermbg' : 'ctermfg'
   endif
 
-
   gui_g = TryHex(hidict->get(gui_attr, ''))
   cterm_g = TryHex(hidict->get(cterm_attr, ''))
   gui_g = gui_g != '' ? gui_g : cterm_g
@@ -298,19 +304,17 @@ def HiFgOrBgWithFallback(sources: list<string>, fg_or_bg: string): dict<string>
   # * if the first source has both guifg and ctermfg, return both
   # * if the first source has one of guifg or ctermfg, match them as
   #   closely as possible
-  # * if the first source has neigher guifg or ctermfg, move to the next
+  # * if the first source has neither guifg or ctermfg, move to the next
   #   source
-  # * if all sources are exhausted AND the last source provided was
-  #   'Normal', return black for the foreground or white for the background.
+  # * if all sources are exhausted try 'Normal' if it hasn't been tried
+  # * if 'Normal' has no fg or bg colors, return black for fg or white for bg
   #
   # Inputs:
   #  sources: list of highlight group names
   #  fg_or_bg: 'fg' or 'bg'
   #
   # Returns:
-  #   dict with keys ['guifg' and 'ctermfg'] or ['guibg' and 'ctermbg']. There are
-  #   two layers of fallback values: Try to use the 'Normal' highlight if everything
-  #   on the list fails. If even 'Normal' fails, return black fg and white bg. Will
+  #   dict with keys ['guifg' and 'ctermfg'] or ['guibg' and 'ctermbg']. Will
   #   always return hex values, even for cterm colors. These will need to be
   #   converted back for assignent to hi cterm values.
 
@@ -363,6 +367,70 @@ enddef
 #
 # ---------------------------------------------------------------------------- #
 
+def IsGuiReversed(hi_dict: dict<any>): bool
+  # Check if a highlight group is reversed in the GUI.
+  # Inputs:
+  #   hi_dict - highlight group dictionary
+  # Returns:
+  #   true if the highlight group is reversed, false otherwise
+  return hi_dict->get('gui', {})->get('reverse', v:false) ||
+         hi_dict->get('gui', {})->get('standout', v:false)
+enddef
+
+
+def IsCtermReversed(hi_dict: dict<any>): bool
+  # Check if a highlight group is reversed in the terminal.
+  # Inputs:
+  #   hi_dict - highlight group dictionary
+  # Returns:
+  #   true if the highlight group is reversed, false otherwise
+  return hi_dict->get('cterm', {})->get('reverse', v:false)
+enddef
+
+
+def ForceReverse(hi_dict: dict<any>, group: string): void
+  # Reverse the fg and bg colors of a highlight group.
+  # Inputs:
+  #   hi_dict - highlight group dictionary
+  #   group - name of the highlight group ('gui' or 'cterm')
+  # Returns:
+  #   hi_dict with reversed fg and bg colors
+  #
+  # I thought I could make this happen by setting or unsetting reverse and standout
+  # attributes, but that doesn't always work. Worse, it will work for some hi groups
+  # and not for others ... in the same colorscheme.
+  #
+  # I'm not going to take that laying down. Forcing reverse by explicitly swiching fg
+  # and bg colors.
+  
+  # var is_reversed = v:false
+  # var value = hi_dict->get(group, {})
+  # if value->get('reverse', v:false)
+  #   remove(value, 'reverse')
+  #   is_reversed = v:true
+  # endif
+  # if value->get('standout', v:false)
+  #   remove(value, 'standout')
+  #   is_reversed = v:true
+  # endif
+  # if !is_reversed
+  #   hi_dict.gui = hi_dict->get(group, {})->extend({ standout: v:true })
+  # endif
+  # # just to be tidy, remove the group if we've emptied it
+  # if hi_dict->get(group, { missing: v:true }) == {}
+  #   remove(hi_dict, group)
+  # endif
+
+  var fg_attrib = group .. 'fg'
+  var bg_attrib = group .. 'bg'
+  var fg_value = hi_dict->get(fg_attrib, '')
+  var bg_value = hi_dict->get(bg_attrib, '')
+  hi_dict[fg_attrib] = bg_value
+  hi_dict[bg_attrib] = fg_value
+enddef
+
+
+
 def HardHi(base_hi_group: string, basename: string = ''): void
   # Create an emphasized version of a highlight group.
   #
@@ -378,38 +446,17 @@ def HardHi(base_hi_group: string, basename: string = ''): void
   hldict.name = basename == '' ? base_hi_group .. 'Hard' : basename .. 'Hard'
 
   # make text bold
-  hldict.gui = hldict->get('gui', {})->extend({ bold: v:true })
-  hldict.term = hldict->get('term', {})->extend({ bold: v:true })
-  hldict.cterm = hldict->get('cterm', {})->extend({ bold: v:true })
+  if has('gui_running')
+    hldict.gui = hldict->get('gui', {})->extend({ bold: v:true })
+  else
+    ForceReverse(hldict, 'gui')
+    ForceReverse(hldict, 'term')
+    ForceReverse(hldict, 'cterm')
+  endif
+
   hlset([hldict])
 enddef
 
-def LogMessage(message: string): void
-    var log_file = expand('~/vimscript_log.txt')
-
-    writefile([message], log_file, 'a')
-
-    echo message
-enddef
-
-def IsGuiReversed(hi_dict: dict<any>): bool
-  # Check if a highlight group is reversed in the GUI.
-  # Inputs:
-  #   hi_dict - highlight group dictionary
-  # Returns:
-  #   true if the highlight group is reversed, false otherwise
-  return hi_dict->get('gui', {})->get('reverse', v:false) ||
-         hi_dict->get('gui', {})->get('standout', v:false)
-enddef
-
-def IsCtermReversed(hi_dict: dict<any>): bool
-  # Check if a highlight group is reversed in the terminal.
-  # Inputs:
-  #   hi_dict - highlight group dictionary
-  # Returns:
-  #   true if the highlight group is reversed, false otherwise
-  return hi_dict->get('cterm', {})->get('reverse', v:false)
-enddef
 
 def SoftHi(base_hi_group: string, basename: string = ''): void
   # Create a de-emphasized version of a highlight group.
@@ -420,13 +467,11 @@ def SoftHi(base_hi_group: string, basename: string = ''): void
   #   no basename is given, a new group `base_hi_group .. 'Soft'` will be
   #   created.
   # Effects:
-  #  Creates a new highlight group which should be an emphasized version of
+  #  Creates a new highlight group which should be a de-emphasized version of
   #  the input highlight group
   var hldict = hlget(base_hi_group, v:true)[0]
   hldict.name = basename == '' ? base_hi_group .. 'Soft' : basename .. 'Soft'
 
-  # if anything surprising happens, hi group will still exist, but will be
-  # an exact match for base_hi_group
   hlset([hldict])
   var grounds = HiGroundsWithFallback([base_hi_group])
 

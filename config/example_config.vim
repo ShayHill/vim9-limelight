@@ -39,6 +39,14 @@ set laststatus=2
 #   return stl
 # enddef
 
+
+# the defaults, but just to show the config variables exist
+g:focalpoint_cn_candidates = ['IncSearch', 'Search', 'ErrorMsg']
+g:focalpoint_text_fade = 0.65
+g:focalpoint_bg_fade = 0.1
+
+
+# nothing related to Limelight, just shorthand for statusline
 g:line_mode_map = {
   n: 'N',
   v: 'V',
@@ -55,24 +63,28 @@ g:line_mode_map = {
   t: 'T'
 }
 
+
 def g:GenerateStatusline(winid: number): string
   var stl = ""
 
-  # inline highlight group strings
-  var bold_f = g:FPHiSelect(winid, 'StatusLineHard', 'StatusLineNCSoft', 'StatusLineCNHard')
-  var weak = g:FPHiSelect(winid, 'StatusLineSoft', 'StatusLineNCSoft', 'StatusLineCNSoft')
-  var weak_u = g:FPHiSelect(winid, 'StatusLine', 'StatusLineNCSoft', 'StatusLineCN')
-  var bold_u = g:FPHiSelect(winid, 'StatusLine', 'StatusLineNCHard', 'StatusLineCN')
+  # hard when focused, whether split or unsplit, normal otherwise
+  var hard_when_focused = g:FPHiSelect(winid, 'StatusLineHard', 'StatusLineNCSoft', 'StatusLineCNHard')
+  # soft always
+  var soft = g:FPHiSelect(winid, 'StatusLineSoft', 'StatusLineNCSoft', 'StatusLineCNSoft')
+  # soft only when shaded, normal otherwise
+  var soft_when_shaded = g:FPHiSelect(winid, 'StatusLine', 'StatusLineNCSoft', 'StatusLineCN')
+  # normal always
   var plain = g:FPHiSelect(winid, 'StatusLine', 'StatusLineNC', 'StatusLineCN')
 
+  # use plain hi group for all separators
   var sep = plain .. '|'
 
-  # show current mode in bold
-  stl ..= bold_f .. ' %{g:line_mode_map[mode()]} ' .. sep
+  # show current mode in bold (gvim) or reversed(terminal)
+  stl ..= hard_when_focused .. ' %{g:line_mode_map[mode()]} ' .. sep
 
   # show branch (requires fugitive)
   if exists('g:loaded_fugitive')
-    stl ..= weak_u .. ' %{FugitiveHead()} ' .. sep
+    stl ..= soft_when_shaded .. ' %{FugitiveHead()} ' .. sep
   endif
 
   # relative file path
@@ -84,15 +96,15 @@ def g:GenerateStatusline(winid: number): string
   stl ..= plain .. ' %l' .. ':' .. '%L' .. ' ☰ ' .. '%v %c '
   stl ..= sep
 
-  # buffer number
-  stl ..= weak .. ' b' .. bold_u .. '%n'
+  stl ..= soft .. ' b' .. plain .. '%n'
 
   # window number
-  stl ..= weak .. ' w' .. bold_u .. '%{win_getid()} '
+  stl ..= soft .. ' w' .. plain .. '%{win_getid()} '
   return stl
 enddef
 
 set statusline=%!GenerateStatusline(g:statusline_winid)
+
 
 # comment this out to remove window shading
 augroup ShadeNotCurrentWindow
@@ -101,6 +113,19 @@ augroup ShadeNotCurrentWindow
   autocmd WinLeave * setl wincolor=NormalNC
 augroup END
 
+# colorscheme-specific settings
+# possible keys:
+#
+#   cn: highlight group for active statusbar when split
+#
+#   bg: highlight group for shaded windows
+#
+#   bg_fade: fade factor for shaded windows. 0.0 means no fade, 1.0 means full fade.
+#
+#   text_fade: fade factor for 'soft' text in the statusline.
+#
+#   set_pmenu: bool - replace Pmenu with faded bg color. For attractive themes with
+#   ugly popup_menu colors. Looking at you, zaibatsu.
 g:focalpoint_explicate = {
   PaperColor: {cn: 'DiffAdd', bg: 'MatchParen', bg_fade: 0.25},
   blue: {bg_fade: 0.2, text_fade: 0.99},
