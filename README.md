@@ -20,7 +20,7 @@ You will not see a change after installing this plugin. Everything you get is "u
 
 ### New highlight groups
 
-Vim9-focalpoint creates 8 new highlight groups, 7 for statuslines, and 1 for window backgrounds. This gives a total of 2 background highlight groups and 9 StatusLine highlight groups. Beneath each highlighting group, I've included the definition Vim9-focalpoint will create if you are using the Habamax colorscheme. You don't have to use any of these, but they are provided for your convenience. You can use `g:FPHiSelect` to select from any highlight group you desire.
+Vim9-focalpoint creates 8 new highlight groups, 7 for statuslines, and 1 for window backgrounds. This gives a total of 2 background highlight groups and 9 StatusLine highlight groups. Beneath each highlighting group, I've included the definition Vim9-focalpoint will create if you are using the Habamax colorscheme. You don't have to use any of these, but they are provided for your convenience. You can use `g:LimelightHiSelect` to select from any highlight group you desire.
 
 #### The statusline when only one split is open
 
@@ -56,7 +56,7 @@ NormalNC       xxx ctermbg=237 guibg=#3a3a3a
 ### Two functions for choosing content and format based on window state
 
 ~~~vim
-def g:FPSelect(
+def g:LimelightSelect(
     winid: number,
     statusline: string,
     not_current: string,
@@ -67,7 +67,7 @@ def g:FPSelect(
 This function will look at the winid and decide if the window is `normal` (only one split is open), `not_current` (unfocused split), or `current_now` (focused split when splits are open). It will then select and return the appropriate string as a highlight group. This can be used to insert different text in different states.
 
 ~~~vim
-def g:FPHiSelect(
+def g:LimelightHiSelect(
     winid: number,
     statusline: string,
     not_current: string,
@@ -89,11 +89,11 @@ set laststatus=2
 def g:GenerateStatusline(winid: number): string
     var stl = ""
 
-    # g:FPHiSelect chooses a highlight group based on winid
-    var hi_group = g:FPHiSelect(winid, 'StatusLine', 'StatusLineNC', 'StatusLineCN')
+    # g:LimelightHiSelect chooses a highlight group based on winid
+    var hi_group = g:LimelightHiSelect(winid, 'StatusLine', 'StatusLineNC', 'StatusLineCN')
 
-    # g:FPSelect chooses a string based on winid
-    var state = g:FPSelect(winid, 'STATUS LINE', 'NOT CURRENT', 'CURRENT NOW')
+    # g:LimelightSelect chooses a string based on winid
+    var state = g:LimelightSelect(winid, 'STATUS LINE', 'NOT CURRENT', 'CURRENT NOW')
 
     # set your highlighting
     stl ..= hi_group
@@ -112,7 +112,7 @@ set statusline=%!GenerateStatusline(g:statusline_winid)
 
 If you are using vim9script, you can copy and paste the last code block into your vimrc. You'll have a simple statusline that performs the neat trick of brightening up when you have splits open. Once you understand how it works, you can build something more elaborate, changing highlight groups as many times as you like to make every element three unique (one per state) colors if you wish.
 
-I've provided the 7 new highlight groups for convenience, but you can use `g:FPHiSelect` to select from any highlight group you desire or create.
+I've provided the 7 new highlight groups for convenience, but you can use `g:LimelightHiSelect` to select from any highlight group you desire or create.
 
 `:hi<CR>` to see what's already defined.
 

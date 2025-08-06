@@ -52,16 +52,20 @@ const SUFFICIENT_CONTRAST = 16000
 # The high-contrast StatusLineNC highlight is selected from high-contrast
 # highlight groups in the current colorscheme. These are the candidates in
 # order of preference.
-if !exists('g:focalpoint_cn_candidates')
-  g:focalpoint_cn_candidates = ['IncSearch', 'Search', 'ErrorMsg']
+if !exists('g:limelight_cn_candidates')
+  g:limelight_cn_candidates = ['IncSearch', 'Search', 'ErrorMsg']
 endif
 
-if !exists('g:focalpoint_text_fade')
-  g:focalpoint_text_fade = 0.65
+if !exists('g:limelight_text_fade')
+  g:limelight_text_fade = 0.65
 endif
 
-if !exists('g:focalpoint_bg_fade')
-  g:focalpoint_bg_fade = 0.1
+if !exists('g:limelight_bg_fade')
+  g:limelight_bg_fade = 0.1
+endif
+
+if !exists('g:limelight_config')
+  g:limelight_config = {}
 endif
 
 
@@ -475,9 +479,9 @@ def SoftHi(base_hi_group: string, basename: string = ''): void
   hlset([hldict])
   var grounds = HiGroundsWithFallback([base_hi_group])
 
-  var text_fade = g:focalpoint_text_fade
+  var text_fade = g:limelight_text_fade
   try
-    text_fade = g:focalpoint_explicate[g:colors_name]['text_fade']
+    text_fade = g:limelight_config[g:colors_name]['text_fade']
   catch
   endtry
 
@@ -513,7 +517,7 @@ def PickCurrentNowHi(candidates: list<string>): string
   # the default statusline hightlight group.
   var candidates_prime = candidates
   try
-    candidates_prime = [g:focalpoint_explicate[g:colors_name]['cn']]
+    candidates_prime = [g:limelight_config[g:colors_name]['cn']]
   catch
   endtry
 
@@ -584,13 +588,13 @@ def DefineNormalNC(): void
   # provide a background color for shaded windows.
   var explicated_fade = -1.0
   try
-    explicated_fade = g:focalpoint_explicate[g:colors_name]['bg_fade']
+    explicated_fade = g:limelight_config[g:colors_name]['bg_fade']
   catch
   endtry
 
   var grounds_candidates = []  # will fall back to Normal hi group
   try
-    grounds_candidates = [g:focalpoint_explicate[g:colors_name]['bg']]
+    grounds_candidates = [g:limelight_config[g:colors_name]['bg']]
   catch
   endtry
 
@@ -598,7 +602,7 @@ def DefineNormalNC(): void
   var grounds_nc = HlgetOrEmpty(grounds_candidates[0])
   grounds_nc.name = 'NormalNC'
 
-  var bg_fade = g:focalpoint_bg_fade
+  var bg_fade = g:limelight_bg_fade
   if explicated_fade != -1.0
     bg_fade = explicated_fade
   endif
@@ -613,7 +617,7 @@ def DefineNormalNC(): void
   # overwrite the Pmenu hi group if user requests it
   var do_set_pmenu = v:false
   try
-    do_set_pmenu = g:focalpoint_explicate[g:colors_name]['set_pmenu']
+    do_set_pmenu = g:limelight_config[g:colors_name]['set_pmenu']
   catch
   endtry
   if do_set_pmenu
@@ -634,7 +638,7 @@ def LimelightReset(): void
   # not related to Limelight, but this is as good a place as any to fix them.
   #
   # Call this when the colorscheme changes
-  var cursor_hi = PickCurrentNowHi(g:focalpoint_cn_candidates)
+  var cursor_hi = PickCurrentNowHi(g:limelight_cn_candidates)
   SplitHi('StatusLine')
   SplitHi('StatusLineNC')
   SplitHi(cursor_hi, 'StatusLineCN')
@@ -665,7 +669,7 @@ def WinState(winid: number): number
 enddef
 
 
-def g:FPSelect(
+def g:LimelightSelect(
     winid: number,
     statusline: string,
     not_current: string,
@@ -679,17 +683,17 @@ def g:FPSelect(
 enddef
 
 
-def g:FPHiSelect(
+def g:LimelightHiSelect(
     winid: number,
     statusline: string,
     not_current: string,
     current_now: string
   ): string
-  # Select a highlight string for the statusline based on winid
-  # The difference between this and FPSelect is that FPHiSelect wraps
-  # highlight groups in the correct symbols to be inserted directly into an
-  # statusline string.
-  return g:FPSelect(
+  # Select a highlight string for the statusline based on winid The difference
+  # between this and LimelightSelect is that LimelightHiSelect wraps highlight
+  # groups in the correct symbols to be inserted directly into an statusline
+  # string.
+  return g:LimelightSelect(
     winid,
     '%#' .. statusline .. '#',
     '%#' .. not_current .. '#',
