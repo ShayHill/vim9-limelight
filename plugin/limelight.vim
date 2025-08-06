@@ -27,9 +27,9 @@ vim9script
 # * StatusLine  " previously existing
 # * StatusLineSoft (grayed out text for default statusline)
 #
-# * StatusLineNCHard (bold text unfocused statusline)
+# * StatusLineNCHard (bold text for unfocused statusline)
 # * StatusLineNC  " previously existing
-# * StatusLineNCSoft (grayed out text for default statusline)
+# * StatusLineNCSoft (grayed out text for unfocused statusline)
 #
 # * StatusLineCNHard (bold text for focused statusline with splits)
 # * StatusLineCN  (normal text for focused statusline with splits)
@@ -712,10 +712,10 @@ def g:LimelightHiSelect(
     not_current: string,
     current_now: string
   ): string
-  # Select a highlight string for the statusline based on winid The difference
-  # between this and LimelightSelect is that LimelightHiSelect wraps highlight
-  # groups in the correct symbols to be inserted directly into an statusline
-  # string.
+  # Select a highlight string for the statusline based on winid. The
+  # difference between this and LimelightSelect is that LimelightHiSelect
+  # wraps highlight groups in the correct symbols to be inserted directly into
+  # a statusline string.
   return g:LimelightSelect(
     winid,
     '%#' .. statusline .. '#',
