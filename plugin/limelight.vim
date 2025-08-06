@@ -40,16 +40,10 @@ vim9script
 #
 # ---------------------------------------------------------------------------- #
 
-# if exists("g:loaded_limelight") || &cp
-#   finish
-# endif
-# g:loaded_limelight = v:true
-
-def LogMessage(message: string): void
-  var log_file = expand('~/vimscript_log.txt')
-  writefile([message], log_file, 'a')
-  echo message
-enddef
+if exists('g:loaded_limelight') || &cp
+  finish
+endif
+g:loaded_limelight = v:true
 
 
 import '../autoload/colormath.vim'
@@ -69,10 +63,6 @@ endif
 
 if !exists('g:limelight_bg_fade')
   g:limelight_bg_fade = 0.1
-endif
-
-if !exists('g:limelight_config')
-  g:limelight_config = {}
 endif
 
 
