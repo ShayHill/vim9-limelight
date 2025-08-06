@@ -6,12 +6,12 @@ vim9script
 # Statuslines in Vim are by default highlighted with the StatusLine and
 # StatusLineNC (StatusLine Not Current) highlight groups. When no splits are
 # open, you will only see the StatusLine highlight group. When splits are
-# open, the focused split will have the StatusLine highlight and unfocused
-# splits will have the StatusLineNC highlight.
+# open, the focused split will have the same StatusLine highlight and
+# unfocused splits will have the StatusLineNC highlight.
 #
 # Often, I would prefer more contrast between these groups, so this module
 # creates a third highlighting group for statuslines, StatusLineCN (StatusLine
-# Current Now). When/no splits are open, you will only see the StatusLine
+# Current Now). When no splits are open, you will only see the StatusLine
 # highlight group (a nice, coordinating color as the colorscheme designer
 # intended it). When splits are open, the focused split will have the
 # high-contrast StatusLineCN highlight and unfocused splits will have the
@@ -26,12 +26,15 @@ vim9script
 # * StatusLineHard (bold text for default statusline)
 # * StatusLine  " previously existing
 # * StatusLineSoft (grayed out text for default statusline)
+#
 # * StatusLineNCHard (bold text unfocused statusline)
 # * StatusLineNC  " previously existing
 # * StatusLineNCSoft (grayed out text for default statusline)
+#
 # * StatusLineCNHard (bold text for focused statusline with splits)
 # * StatusLineCN  (normal text for focused statusline with splits)
 # * StatusLineSoft (grayed out test for focused statusline with splits)
+#
 # * Normal  " previously existing
 # * NormalNC (Normal with a faded background color)
 #
@@ -633,7 +636,7 @@ enddef
 
 def LimelightReset(): void
   # Reset all the hi groups.
-  # Reset the hilight groups defined by Limelight and fix some errors that can be
+  # Reset the highlight groups defined by Limelight and fix some errors that can be
   # caused by switching to/from more/less featureful colorschemes. These errors are
   # not related to Limelight, but this is as good a place as any to fix them.
   #
@@ -650,22 +653,42 @@ def LimelightReset(): void
   highlight link LspHintHighlight Normal
 enddef
 
+
 LimelightReset()
+
 
 augroup ResetStatuslineHiGroups
   autocmd!
   autocmd colorscheme *  LimelightReset()
 augroup END
 
+
+augroup ShadeNotCurrentWindow
+  autocmd!
+  autocmd WinEnter * setl wincolor=Normal
+  autocmd WinLeave * setl wincolor=NormalNC
+augroup END
+
+
 def WinState(winid: number): number
   # Return the state of the window with winid
   # 0: focused, no splits
   # 1: unfocused, has splits (a priori)
   # 2: focused, has splits
+  #
+  # Normal bg color is usually set with a WinEnter autocommand, but Vim will
+  # reuse settings and bypass the autocommand in some instances. This was
+  # explained to me by Christian Brabant in
+  # https://github.com/vim/vim/issues/16882
+  # The WinLeave autocommand never fails.
+  var win_state = 1
   if winid == win_getid()
-    return winnr('$') > 1 ? 2 : 0
+    win_state = winnr('$') > 1 ? 2 : 0
   endif
-  return 1
+  if win_state != 1 && &wincolor != 'Normal'
+    setl wincolor=Normal
+  endif
+  return win_state
 enddef
 
 
