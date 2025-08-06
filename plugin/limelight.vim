@@ -725,7 +725,13 @@ def g:LimelightHiSelect(
 enddef
 
 
-if get(g:, 'limelight_source_default_config', v:false) == v:true
+if get(g:, 'limelight_source_simple_config', v:false) == v:true
   var plugin_dir = fnamemodify(expand('<sfile>'), ':h:h')
-  execute 'source ' .. plugin_dir .. '/config/example_config.vim'
+  execute 'source ' .. plugin_dir .. '/config/simple_config.vim'
+endif
+
+
+if get(g:, 'limelight_source_normal_config', v:false) == v:true
+  var plugin_dir = fnamemodify(expand('<sfile>'), ':h:h')
+  execute 'source ' .. plugin_dir .. '/config/normal_config.vim'
 endif
