@@ -77,8 +77,6 @@ export def HexToCterm(hex_color: string): string
   # Returns
   #   [16 .. 255] 1-15 (user-defined colors) are ignored
   var rgb = HexToRgb(hex_color)
-  # TODO: remove redundant call to HexToRgb
-  var [red, g, blue] = HexToRgb(hex_color)
 
   # nearest xterm color [0 .. 215] => [16 .. 231]
   var [ir, ig, ib] = map(copy(rgb), (_, v): number => ValueToColorIndex(v))
@@ -169,11 +167,50 @@ export def TryHex(color: string): string
 enddef
 
 
+# A large integer that won't break most systems. Used for
+# FloatTo8BitNr.
+const BIG_INT = pow(2, 32) - 1
+
+
+def ClipTo0Through255(val: float): float
+  # Clip a number to the closed interval [0 .. 255]
+  #
+  # Inputs:
+  #   val - a number
+  # Returns:
+  #   a number in the closed interval [0 .. 255]
+  if val < 0
+    return 0.0
+  elseif val > 255
+    return 255.0
+  endif
+  return val
+enddef
+
+
+def FloatTo8BitNr(val: float): number
+    # Convert a float between 0 and 255 to an int between 0 and 255.
+    #
+    # Inputs:
+    #   float_ - a float in the closed interval [0 .. 255]. Values
+    #   outside this range will be clipped.
+    # Returns:
+    #   number in the closed interval [0 .. 255]
+    var val_prime = ClipTo0Through255(val)
+    if float2nr(val_prime) == val_prime
+      return float2nr(val_prime)
+    endif
+    var high_int = float2nr(val_prime / 255 * BIG_INT)
+    g:bbb = high_int
+    return high_int >> 24
+enddef
+
+
 export def MixColors(hex_color_a: string, hex_color_b: string, ratio: float): string
   # Mix two hex colors.
   var rgb_a = HexToRgb(hex_color_a)
   var rgb_b = HexToRgb(hex_color_b)
   var mixed = map(copy(rgb_a), (i, v): float => v * ratio + rgb_b[i] * (1 - ratio))
-  return RgbToHex(map(mixed, (_, v) => float2nr(v)))
+  return RgbToHex(map(mixed, (_, v) => FloatTo8BitNr(v)))
 enddef
 
