@@ -2,7 +2,7 @@
 
 Shade unfocused windows. Give a bright statusline color for active windows *when splits are open*.
 
-| ![focalpoint off](doc/focalpoint_off.jpg) | ![focalpoint on](doc/focalpoint_on.jpg) |
+| ![limelight off](doc/focalpoint_off.jpg) | ![limelight on](doc/focalpoint_on.jpg) |
 | - | - |
 | without limelight | with limelight |
 
@@ -142,7 +142,9 @@ You can re-order, shrink, or expand this list in your vimrc. Be aware that if Li
 
 ### grayed-out text
 
-Limelight "grays out" text for the [Basename]Soft hightlight groups by mixing foreground and background colors at a specified ratio. You can change this ratio in your vimrc. Be aware that terminal colors are defined in wide, discrete colors (there are only 256 of them in total), so a small ratio might not be enough mixing to change the text color at all. A too-large ratio might push the text color all the way into the background color.
+Limelight "grays out" text for the `[Basename]Soft` hightlight groups---**in the statusline**---at a specified ratio. This does not fade text content in your buffers. You can change this ratio in your vimrc. Be aware that terminal colors are defined in wide, discrete colors (there are only 256 of them in total), so a small ratio might not be enough mixing to change the text color at all. A too-large ratio might push the text color all the way into the background color.
+
+*Note*: The similarly-named-but-unrelated plugin, [junegunn/limelight.vim](https://github.com/junegunn/limelight.vim), fades buffer text for all content except the current line. Maybe [Junegunn Choi](https://github.com/junegunn) and I are both Chaplin fans.
 
 ~~~vim
 g:limelight_text_fade = 0.65

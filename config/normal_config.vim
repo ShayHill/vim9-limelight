@@ -2,9 +2,9 @@ vim9script
 
 # ---------------------------------------------------------------------------- #
 #
-#  Statusline with vim9-focalpoint
+#  Statusline with vim9-limelight
 #
-#  Source this file to see the vim9-focalpoint statusline plugin at work.
+#  Source this file to see the vim9-limelight statusline plugin at work.
 #
 # ---------------------------------------------------------------------------- #
 
