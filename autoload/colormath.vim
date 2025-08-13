@@ -201,7 +201,6 @@ def FloatTo8BitNr(val: float): number
       return float2nr(val_prime)
     endif
     var high_int = float2nr(val_prime / 255 * BIG_INT)
-    g:bbb = high_int
     return high_int >> 24
 enddef
 
