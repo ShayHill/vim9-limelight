@@ -97,7 +97,7 @@ def WinState(winid: number): number
   if winid == win_getid()
     win_state = winnr('$') > 1 ? 2 : 0
   endif
-  if win_state != 1 && &wincolor != 'Normal'
+  if win_state != 1 && &wincolor != 'Normal' && &wincolor != ''
     setl wincolor=Normal
   endif
   return win_state
