@@ -12,6 +12,27 @@ import '../autoload/colormath.vim'
 const SUFFICIENT_CONTRAST = 16000
 
 
+def GetConfig(key: string, default: any): any
+  # Get a value from the colorscheme config. If not defined, return the default value.
+  return get(g:, 'limelight_config', {})->get(g:colors_name, {})->get(key, default)
+enddef
+
+
+def GetConfigInList(key: string, default: list<string>): list<string>
+  # Get a value from the colorscheme config. Return as list if not already a
+  # list. By default, vim9-limelight will produce a list of candidate colors
+  # for some highlight groups. If these candidates are overridden in the
+  # g:limelight_config, they are overridden as ONE hightlight group that will
+  # be used instead of any other candidate. Wrap this one candidate in a list
+  # so it can be passed to functions expecting the default candidate list.
+  var value = GetConfig(key, default)
+  if type(value) != type([])
+    return [value]
+  endif
+  return value
+enddef
+
+
 export def HlgetOrEmpty(hi_group: string): dict<any>
   # Get a highlight group dictionary. If the highlight group does not exist,
   # return an empty dictionary.
@@ -224,12 +245,7 @@ def SoftHi(base_hi_group: string, basename: string = ''): void
 
   hlset([hldict])
   var grounds = HiGroundsWithFallback([base_hi_group])
-
-  var text_fade = g:limelight_text_fade
-  try
-    text_fade = g:limelight_config[g:colors_name]['text_fade']
-  catch
-  endtry
+  var text_fade = GetConfig('text_fade', g:limelight_text_fade)
 
   if IsGuiReversed(hldict)
     hldict.guibg = colormath.MixColors(grounds.guifg, grounds.guibg, text_fade)
@@ -261,12 +277,7 @@ def PickCurrentNowHi(candidates: list<string>): string
   #
   # If one of these or any other problem occurs, just return 'StatusLine',
   # the default statusline hightlight group.
-  var candidates_prime = candidates
-  try
-    candidates_prime = [g:limelight_config[g:colors_name]['cn']]
-  catch
-  endtry
-
+  var candidates_prime = GetConfigInList('cn', candidates)
   try
     var statusline_nc_bg = HiGroundsWithFallback(['StatusLineNC']).guibg
     var contrast: number
@@ -332,40 +343,26 @@ enddef
 def DefineNormalNC(): void
   # Define a Normal highlighting group for non-current windows. This will
   # provide a background color for shaded windows.
-  var explicated_fade = -1.0
-  try
-    explicated_fade = g:limelight_config[g:colors_name]['bg_fade']
-  catch
-  endtry
+  var bg_fade = GetConfig('bg_fade', g:limelight_bg_fade)
+  var grounds_candidates = GetConfigInList('bg', [])
+  var do_set_pmenu = GetConfig('set_pmenu', v:false)
 
-  var grounds_candidates = []  # will fall back to Normal hi group
-  try
-    grounds_candidates = [g:limelight_config[g:colors_name]['bg']]
-  catch
-  endtry
+  if empty(grounds_candidates) && bg_fade <= 0.0
+    execute 'highlight link Normal NormalNC'
+    if do_set_pmenu
+      execute 'highlight! link Normal Pmenu'
+    endif
+    return
+  endif
 
   var grounds = HiGroundsWithFallback(grounds_candidates)
   var grounds_nc = HlgetOrEmpty(grounds_candidates[0])
   grounds_nc.name = 'NormalNC'
-
-  var bg_fade = g:limelight_bg_fade
-  if explicated_fade != -1.0
-    bg_fade = explicated_fade
-  endif
-
-  if bg_fade > 0.0
-    grounds_nc.guibg = colormath.MixColors(grounds.guifg, grounds.guibg, bg_fade)
-    grounds_nc.ctermbg = colormath.HexToCterm(colormath.MixColors(grounds.ctermfg, grounds.ctermbg, bg_fade))
-  endif
-
+  grounds_nc.guibg = colormath.MixColors(grounds.guifg, grounds.guibg, bg_fade)
+  grounds_nc.ctermbg = colormath.HexToCterm(colormath.MixColors(grounds.ctermfg, grounds.ctermbg, bg_fade))
   hlset([grounds_nc])
 
   # overwrite the Pmenu hi group if user requests it
-  var do_set_pmenu = v:false
-  try
-    do_set_pmenu = g:limelight_config[g:colors_name]['set_pmenu']
-  catch
-  endtry
   if do_set_pmenu
     grounds_nc.name = 'Pmenu'
     hlset([grounds_nc])
