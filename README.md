@@ -165,7 +165,7 @@ g:limelight_bg_fade = 0.1
 
 Set this to 0.0 to eliminate the background shading entirely. This will short-circuit background color creation, so you will not experience any performance hit from background shading (it is negligible anyway).
 
-To temporarily disable background fading, `:hi link NormalNC Normal`. This will disable background fading on inactive splits until the next time you change colorschemes or reload your vimrc. I find this useful for reviewing diffs.
+To temporarily disable background fading, `:hi! link NormalNC Normal`. This will disable background fading on inactive splits until the next time you change colorschemes or reload your vimrc. I find this useful for reviewing diffs.
 
 ### colorscheme-specific settings
 
