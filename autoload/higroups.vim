@@ -99,11 +99,6 @@ def HiFgOrBgWithFallback(sources: list<string>, fg_or_bg: string): dict<string>
   #   dict with keys ['guifg' and 'ctermfg'] or ['guibg' and 'ctermbg']. Will
   #   always return hex values, even for cterm colors. These will need to be
   #   converted back for assignent to hi cterm values.
-
-  if index(sources, 'Normal') == -1
-    add(sources, 'Normal')
-  endif
-
   var result: dict<string>
   for source in sources
     result = HiFgOrBgJustOne(source, fg_or_bg)
@@ -353,6 +348,10 @@ def DefineNormalNC(): void
       execute 'highlight! link Normal Pmenu'
     endif
     return
+  endif
+
+  if index(grounds_candidates, 'Normal') == -1
+    add(grounds_candidates, 'Normal')
   endif
 
   var grounds = HiGroundsWithFallback(grounds_candidates)
