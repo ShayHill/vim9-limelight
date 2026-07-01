@@ -88,8 +88,7 @@ def HiFgOrBgWithFallback(sources: list<string>, fg_or_bg: string): dict<string>
   #   closely as possible
   # * if the first source has neither guifg or ctermfg, move to the next
   #   source
-  # * if all sources are exhausted try 'Normal' if it hasn't been tried
-  # * if 'Normal' has no fg or bg colors, return black for fg or white for bg
+  # * if all sources are exhausted, return black for fg or white for bg
   #
   # Inputs:
   #  sources: list of highlight group names
@@ -342,16 +341,16 @@ def DefineNormalNC(): void
   var grounds_candidates = GetConfigInList('bg', [])
   var do_set_pmenu = GetConfig('set_pmenu', v:false)
 
-  if empty(grounds_candidates) && bg_fade <= 0.0
-    execute 'highlight link Normal NormalNC'
-    if do_set_pmenu
-      execute 'highlight! link Normal Pmenu'
-    endif
-    return
-  endif
-
   if index(grounds_candidates, 'Normal') == -1
     add(grounds_candidates, 'Normal')
+  endif
+
+  if bg_fade <= 0.0
+    execute 'highlight! link NormalNC ' .. grounds_candidates[0]
+    if do_set_pmenu
+      execute 'highlight! link Pmenu ' .. grounds_candidates[0]
+    endif
+    return
   endif
 
   var grounds = HiGroundsWithFallback(grounds_candidates)
