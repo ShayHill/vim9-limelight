@@ -331,10 +331,7 @@ def SplitHi(hi_group: string, basename: string = ''): void
     SoftHi(hi_group)
     return
   endif
-  var hldict = hlget(hi_group, v:true)[0]
-  hldict.name = basename
-  hlset([hldict])
-
+  execute 'highlight! link ' .. basename .. ' ' .. hi_group
   HardHi(hi_group, basename)
   SoftHi(hi_group, basename)
 enddef
