@@ -232,14 +232,19 @@ def SoftHi(base_hi_group: string, basename: string = ''): void
   #   no basename is given, a new group `base_hi_group .. 'Soft'` will be
   #   created.
   # Effects:
-  #  Creates a new highlight group which should be a de-emphasized version of
-  #  the input highlight group
-  var hldict = hlget(base_hi_group, v:true)[0]
-  hldict.name = basename == '' ? base_hi_group .. 'Soft' : basename .. 'Soft'
-
-  hlset([hldict])
-  var grounds = HiGroundsWithFallback([base_hi_group])
+  #   Creates a new highlight group which should be a de-emphasized version of
+  #   the input highlight group
+  var new_name = basename == '' ? base_hi_group .. 'Soft' : basename .. 'Soft'
   var text_fade = GetConfig('text_fade', g:limelight_text_fade)
+  if text_fade <= 0.0
+    execute 'highlight! link ' .. new_name .. ' ' .. base_hi_group
+    return
+  endif
+
+  var hldict = hlget(base_hi_group, v:true)[0]
+  hldict.name = new_name
+
+  var grounds = HiGroundsWithFallback([base_hi_group])
 
   if IsGuiReversed(hldict)
     hldict.guibg = colormath.MixColors(grounds.guifg, grounds.guibg, text_fade)
@@ -329,6 +334,7 @@ def SplitHi(hi_group: string, basename: string = ''): void
   var hldict = hlget(hi_group, v:true)[0]
   hldict.name = basename
   hlset([hldict])
+
   HardHi(hi_group, basename)
   SoftHi(hi_group, basename)
 enddef
