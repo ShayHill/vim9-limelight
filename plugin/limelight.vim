@@ -3,19 +3,19 @@ vim9script
 #
 # StatusLineNC
 #
-# Statuslines in Vim are by default highlighted with the StatusLine and
-# StatusLineNC (StatusLine Not Current) highlight groups. When no splits are
-# open, you will only see the StatusLine highlight group. When splits are
-# open, the focused split will have the same StatusLine highlight and
-# unfocused splits will have the StatusLineNC highlight.
-#
+# Statuslines in Vim are by default highlighted with the built-in `StatusLine`
+# and `StatusLineNC` (StatusLine Not Current) highlight groups. When no splits
+# are open, you will only see the `StatusLine` highlight group. When splits
+# are open, the focused split will have the same `StatusLine` highlight and
+# unfocused splits will have the `StatusLineNC` highlight.
+
 # Often, I would prefer more contrast between these groups, so this module
-# creates a third highlighting group for statuslines, StatusLineCN (StatusLine
-# Current Now). When no splits are open, you will only see the StatusLine
-# highlight group (a nice, coordinating color as the colorscheme designer
-# intended it). When splits are open, the focused split will have the
-# high-contrast StatusLineCN highlight and unfocused splits will have the
-# StatusLineNC highlight.
+# creates a third highlighting group for statuslines: `StatusLineCN`
+# (StatusLine Current Now). When no splits are open, you will only see the
+# `StatusLine` highlight group (a nice, coordinating color as the colorscheme
+# designer intended it). When splits are open, the focused split will have the
+# high-contrast `StatusLineCN` highlight and unfocused splits will have the
+# `StatusLineNC` highlight.
 #
 # That part is simple. A lot of the code here is for the secondary functions
 # of highlighting and lowlighting text against a background. The main purpose
@@ -23,20 +23,20 @@ vim9script
 # creates 8 new highlight groups for a total of 9 StatusLine highlight groups
 # and 2 background highlight groups.
 #
-# * StatusLineHard (bold text for default statusline)
-# * StatusLine  " previously existing
-# * StatusLineSoft (grayed out text for default statusline)
-#
-# * StatusLineNCHard (bold text for unfocused statusline)
-# * StatusLineNC  " previously existing
-# * StatusLineNCSoft (grayed out text for unfocused statusline)
-#
-# * StatusLineCNHard (bold text for focused statusline with splits)
-# * StatusLineCN  (normal text for focused statusline with splits)
-# * StatusLineSoft (grayed out test for focused statusline with splits)
-#
-# * Normal  " previously existing
-# * NormalNC (Normal with a faded background color)
+# - StatusLine (*previously existing* - used for single-window statusline)
+# - **StatusLineHard** (bold text for default statusline)
+# - **StatusLineSoft** (grayed out text for default statusline)
+
+# - StatusLineNC (*previously existing* - used for unfocused statusline)
+# - **StatusLineNCHard** (bold text for unfocused statusline)
+# - **StatusLineNCSoft** (grayed out text for unfocused statusline)
+
+# - **StatusLineCN** (used for focused statusline when splits are open)
+# - **StatusLineCNHard** (bold text for focused statusline with splits)
+# - **StatusLineSoft** (grayed out test for focused statusline with splits)
+
+# - Normal (*previously existing* - defines background color)
+# - **NormalNC** (defines a faded background color for unfocused windows)
 #
 # ---------------------------------------------------------------------------- #
 
