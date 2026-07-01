@@ -160,4 +160,4 @@ endif
 if get(g:, 'limelight_source_normal_config', v:false) == v:true
   var plugin_dir = fnamemodify(expand('<sfile>'), ':h:h')
   execute 'source ' .. plugin_dir .. '/config/normal_config.vim'
-gndif
+endif
