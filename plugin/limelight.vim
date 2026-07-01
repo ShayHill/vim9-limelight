@@ -75,10 +75,24 @@ augroup ResetStatuslineHiGroups
 augroup END
 
 
+def MaybeSetNormal()
+  if hlget(&wincolor) != hlget('Normal', v:true)
+    setlocal wincolor=Normal
+  endif
+enddef
+
+
+def MaybeSetNormalNC()
+  if hlget(&wincolor) != hlget('NormalNC', v:true)
+    setlocal wincolor=NormalNC
+  endif
+enddef
+
+
 augroup ShadeNotCurrentWindow
   autocmd!
-  autocmd WinEnter * setl wincolor=Normal
-  autocmd WinLeave * setl wincolor=NormalNC
+  autocmd WinEnter * call MaybeSetNormal()
+  autocmd WinLeave * call MaybeSetNormalNC()
 augroup END
 
 
