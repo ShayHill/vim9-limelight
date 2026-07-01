@@ -75,15 +75,36 @@ augroup ResetStatuslineHiGroups
 augroup END
 
 
+def CompHighlights(high_a: string, high_b: string): bool
+  # Compare two colorschemes. Return true if every attrib except id is the
+  # same.
+  var list_a = hlget(high_a, v:true)
+  if empty(list_a)
+    return v:false
+  endif
+  var list_b = hlget(high_b, v:true)
+  if empty(list_b)
+    return v:false
+  endif
+  var dict_a = list_a[0]
+  var dict_b = list_b[0]
+  remove(dict_a, 'id')
+  remove(dict_a, 'name')
+  remove(dict_b, 'id')
+  remove(dict_b, 'name')
+  return dict_a ==# dict_b
+enddef
+
+
 def MaybeSetNormal()
-  if hlget(&wincolor) != hlget('Normal', v:true)
+  if !CompHighlights(&wincolor, 'Normal')
     setlocal wincolor=Normal
   endif
 enddef
 
 
 def MaybeSetNormalNC()
-  if hlget(&wincolor) != hlget('NormalNC', v:true)
+  if !CompHighlights(&wincolor, 'NormalNC')
     setlocal wincolor=NormalNC
   endif
 enddef

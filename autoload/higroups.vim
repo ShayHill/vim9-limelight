@@ -237,6 +237,7 @@ def SoftHi(base_hi_group: string, basename: string = ''): void
   var new_name = basename == '' ? base_hi_group .. 'Soft' : basename .. 'Soft'
   var text_fade = GetConfig('text_fade', g:limelight_text_fade)
   if text_fade <= 0.0
+    execute 'highlight clear ' .. new_name
     execute 'highlight! link ' .. new_name .. ' ' .. base_hi_group
     return
   endif
@@ -331,6 +332,7 @@ def SplitHi(hi_group: string, basename: string = ''): void
     SoftHi(hi_group)
     return
   endif
+  execute 'highlight clear ' .. basename
   execute 'highlight! link ' .. basename .. ' ' .. hi_group
   HardHi(hi_group, basename)
   SoftHi(hi_group, basename)
@@ -349,8 +351,10 @@ def DefineNormalNC(): void
   endif
 
   if bg_fade <= 0.0
+    execute 'highlight clear NormalNC'
     execute 'highlight! link NormalNC ' .. grounds_candidates[0]
     if do_set_pmenu
+      execute 'highlight clear Pmenu'
       execute 'highlight! link Pmenu ' .. grounds_candidates[0]
     endif
     return
