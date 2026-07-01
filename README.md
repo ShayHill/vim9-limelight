@@ -14,7 +14,7 @@ Add one of these to your vimrc:
 
 `g:limelight_source_normal_config = v:true`
 
-The simple config will will give you something to work from. It is created to *not* overwhelm you. It prints the window state in the statusline, so it's probably not something you're going to want to live with long term.
+The simple config will give you something to work from. It is created to *not* overwhelm you. It prints the window state in the statusline, so it's probably not something you're going to want to live with long term.
 
 The normal config may be all you'll ever need. It's at its best if you are using git and pathogen.
 
@@ -44,7 +44,7 @@ Limelight creates 8 new highlight groups for a total of 9 StatusLine highlight g
 
 - **StatusLineCN** (used for focused statusline when splits are open)
 - **StatusLineCNHard** (bold text for focused statusline with splits)
-- **StatusLineSoft** (grayed out test for focused statusline with splits)
+- **StatusLineCNSoft** (grayed out text for focused statusline with splits)
 
 - Normal (*previously existing* - defines background color)
 - **NormalNC** (defines a faded background color for unfocused windows)
@@ -127,7 +127,7 @@ set statusline=%!GenerateStatusline(g:statusline_winid)
 
 If you are using vim9script, you can copy and paste the last code block into your vimrc. You'll have a simple statusline that performs the neat trick of brightening up when you have splits open. Once you understand how it works, you can build something more elaborate, changing highlight groups as many times as you like to make every element three unique (one per state) colors if you wish.
 
-I've provided the 7 new highlight groups for convenience, but you can use `g:LimelightHiSelect` to select from any highlight group you desire or create.
+I've provided the 7 new statusline highlight groups for convenience, but you can use `g:LimelightHiSelect` to select from any highlight group you desire or create.
 
 `:hi<CR>` to see what's already defined.
 
@@ -147,25 +147,29 @@ You can re-order, shrink, or expand this list in your vimrc. Be aware that if Li
 
 ### grayed-out text
 
-Limelight "grays out" text for the `[Basename]Soft` hightlight groups&mdash;**in the statusline**&mdash;at a specified ratio. This does not fade text content in your buffers. You can change this ratio in your vimrc. Be aware that terminal colors are defined in wide, discrete colors (there are only 256 of them in total), so a small ratio might not be enough mixing to change the text color at all. A too-large ratio might push the text color all the way into the background color.
-
-*Note*: The similarly-named-but-unrelated plugin, [junegunn/limelight.vim](https://github.com/junegunn/limelight.vim), fades buffer text for all content except the current line. Maybe [Junegunn Choi](https://github.com/junegunn) and I are both Chaplin fans.
+Limelight "grays out" text for the `[Basename]Soft` highlight groups&mdash;**in the statusline**&mdash;at a specified ratio. This does not fade text content in your buffers. You can change this ratio in your vimrc. Be aware that terminal colors are defined in wide, discrete colors (there are only 256 of them in total), so a small ratio might not be enough mixing to change the text color at all. A too-large ratio might push the text color all the way into the background color.
 
 ~~~vim
 g:limelight_text_fade = 0.65
 ~~~
 
+*Note*: The similarly-named-but-unrelated plugin, [junegunn/limelight.vim](https://github.com/junegunn/limelight.vim), fades buffer text for all content except the current line. Maybe [Junegunn Choi](https://github.com/junegunn) and I are both Chaplin fans.
+
 ### background shading
 
-Limelight creates the NormalNC highlight group by mixing the default (Normal) foreground and background colors at a specified ratio. You can change this ratio in your vimrc. As with limelight_text_fade, be aware that too small or too large ratios can eliminate the effect entirely in the terminal. Set this to 0 to eliminate the background shading entirely. This will short-circuit background color creation, so you will not experience any performance hit from background shading (it is negligible anyway).
+Limelight creates the `NormalNC` highlight group by mixing the default (`Normal`) foreground and background colors at a specified ratio. You can change this ratio in your vimrc. As with `g:limelight_text_fade`, be aware that too small or too large ratios can eliminate the effect entirely in the terminal.
 
 ~~~vim
 g:limelight_bg_fade = 0.1
 ~~~
 
+Set this to 0.0 to eliminate the background shading entirely. This will short-circuit background color creation, so you will not experience any performance hit from background shading (it is negligible anyway).
+
+To temporarily disable background fading, `:hi link NormalNC Normal`. This will disable background fading on inactive splits until the next time you change colorschemes or reload your vimrc. I find this useful for reviewing diffs.
+
 ### colorscheme-specific settings
 
-The above setting define a default strategy for creating highlight groups from any colorscheme. You can specify per-colorscheme settings with a dictionary of dictionaries.
+The above settings define a default strategy for creating highlight groups from any colorscheme. You can specify per-colorscheme settings with a dictionary of dictionaries.
 
 ~~~python
 g:limelight_config = {
@@ -196,7 +200,7 @@ Limelight creates a shaded background color by mixing foreground and background 
 | - | - |
 | default peachpuff | `peachpuff: {bg: 'Pmenu', bg_fade: 0.0}` |
 
-Conversely, some colorscheme Pmenu backgrounds are terrible (white background with white text). Use key `set_pmenu` to replace the Pmenu background with the NormalNC color created by Limelight.
+Conversely, some colorscheme `Pmenu` backgrounds are terrible (white background with white text). Use key `set_pmenu` to replace the `Pmenu` background with the `NormalNC` color created by Limelight.
 
 | ![zaibatsu_default](doc/zaibatsu_off.jpg) | ![zaibatsu configured](doc/zaibatsu_on.jpg) |
 | - | - |

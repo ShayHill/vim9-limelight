@@ -26,15 +26,15 @@ vim9script
 # - StatusLine (*previously existing* - used for single-window statusline)
 # - **StatusLineHard** (bold text for default statusline)
 # - **StatusLineSoft** (grayed out text for default statusline)
-
+#
 # - StatusLineNC (*previously existing* - used for unfocused statusline)
 # - **StatusLineNCHard** (bold text for unfocused statusline)
 # - **StatusLineNCSoft** (grayed out text for unfocused statusline)
-
+#
 # - **StatusLineCN** (used for focused statusline when splits are open)
 # - **StatusLineCNHard** (bold text for focused statusline with splits)
-# - **StatusLineSoft** (grayed out test for focused statusline with splits)
-
+# - **StatusLineCNSoft** (grayed out text for focused statusline with splits)
+#
 # - Normal (*previously existing* - defines background color)
 # - **NormalNC** (defines a faded background color for unfocused windows)
 #
@@ -160,4 +160,4 @@ endif
 if get(g:, 'limelight_source_normal_config', v:false) == v:true
   var plugin_dir = fnamemodify(expand('<sfile>'), ':h:h')
   execute 'source ' .. plugin_dir .. '/config/normal_config.vim'
-endif
+gndif
