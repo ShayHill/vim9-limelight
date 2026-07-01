@@ -380,9 +380,7 @@ enddef
 
 export def LimelightReset(): void
   # Reset all the hi groups.
-  # Reset the highlight groups defined by Limelight and fix some errors that can be
-  # caused by switching to/from more/less featureful colorschemes. These errors are
-  # not related to Limelight, but this is as good a place as any to fix them.
+  # Reset the highlight groups defined by Limelight.
   #
   # Call this when the colorscheme changes
   var cursor_hi = PickCurrentNowHi(g:limelight_cn_candidates)
@@ -390,9 +388,4 @@ export def LimelightReset(): void
   SplitHi('StatusLineNC')
   SplitHi(cursor_hi, 'StatusLineCN')
   DefineNormalNC()
-  # address errors not related to Limelight
-  highlight link LspErrorHighlight Error
-  highlight link LspWarningHighlight Todo
-  highlight link LspInformationHighlight Normal
-  highlight link LspHintHighlight Normal
 enddef
