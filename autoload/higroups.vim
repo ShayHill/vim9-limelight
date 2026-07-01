@@ -14,7 +14,8 @@ const SUFFICIENT_CONTRAST = 16000
 
 def GetConfig(key: string, default: any): any
   # Get a value from the colorscheme config. If not defined, return the default value.
-  return get(g:, 'limelight_config', {})->get(g:colors_name, {})->get(key, default)
+  var colors_name = get(g:, 'colors_name', '')
+  return get(g:, 'limelight_config', {})->get(colors_name, {})->get(key, default)
 enddef
 
 
